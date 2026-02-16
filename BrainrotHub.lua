@@ -1,17 +1,18 @@
---[[ BRAINROT HUB by Xulur - LINORIA EDITION ]]
+--[[ BRAINROT HUB by Xulur - SPEED HUB UI ]]
 
--- Load Linoria Library
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Linoria/LinoriaLib/main/Library.lua"))()
-local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Linoria/LinoriaLib/main/ThemeManager.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Linoria/LinoriaLib/main/SaveManager.lua"))()
+-- Load Speed Hub
+loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
 
+-- Tunggu Speed Hub load
+repeat wait() until _G.SpeedHubX and _G.SpeedHubX.CreateWindow
+
+-- Setup variables
 local T = game:GetService("TweenService")
 local P = game.Players.LocalPlayer
-local U = game:GetService("UserInputService")
 local ESP = {}
 
 --== BRAINROT DATABASE ==--
-local B = {
+local RarityData = {
     Common = {"Noobini Cakenini","Lirili Larila","Tim Cheese","Frulli Frulla","Talpa Di Fero","Svinino Bombondino","Pipi Kiwi","Pipi Corni","Common Lucky Block"},
     Uncommon = {"Trippi Troppi","Gangster Footera","Bobrito Bandito","Boneca Ambalabu","Cacto Hipopotamo","Ta Ta Ta Sahur","Tric Tric Baraboom","67","Pipi Avocado","Uncommon Lucky Block"},
     Rare = {"Cappuccino Assassino","Brr Brr Patapim","Trulimero Trulicina","Bambini Crostini","Bananita Dolphinita","Perochello Lemonchello","Avocadini Guffo","Salamino Penguino","Penguino Cocosino","Ti Ti Ti Sahur","Rare Lucky Block"},
@@ -28,7 +29,7 @@ local B = {
 --== RARITY CHECK ==--
 local function getRarity(name)
     local l = name:lower()
-    for rarity, list in pairs(B) do
+    for rarity, list in pairs(RarityData) do
         for _, brainrotName in ipairs(list) do
             if l:find(brainrotName:lower()) or brainrotName:lower():find(l) then
                 return rarity
@@ -38,90 +39,95 @@ local function getRarity(name)
     return nil
 end
 
---== ESP FUNCTION ==--
-local function createESP(obj, rarity)
-    if not obj then return end
-    
-    local colors = {
-        Common = Color3.fromRGB(128,128,128),
-        Uncommon = Color3.fromRGB(0,255,0),
-        Rare = Color3.fromRGB(0,0,255),
-        Epic = Color3.fromRGB(128,0,128),
-        Legendary = Color3.fromRGB(255,165,0),
-        Mythical = Color3.fromRGB(255,192,203),
-        Cosmic = Color3.fromRGB(0,255,255),
-        Secret = Color3.fromRGB(255,0,255),
-        Celestial = Color3.fromRGB(255,215,0),
-        Divine = Color3.fromRGB(255,0,0),
-        Infinity = Color3.fromRGB(255,255,255)
-    }
-    
-    local highlight = Instance.new("Highlight")
-    highlight.FillColor = colors[rarity] or Color3.new(1,1,1)
-    highlight.OutlineColor = Color3.new(1,1,1)
-    highlight.FillTransparency = 0.5
-    highlight.Parent = obj
-    
-    local billboard = Instance.new("BillboardGui")
-    billboard.Size = UDim2.new(0,200,0,50)
-    billboard.StudsOffset = Vector3.new(0,3,0)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = obj
-    
-    local bg = Instance.new("Frame", billboard)
-    bg.Size = UDim2.new(1,0,1,0)
-    bg.BackgroundColor3 = Color3.new(0,0,0)
-    bg.BackgroundTransparency = 0.3
-    
-    local nameLabel = Instance.new("TextLabel", bg)
-    nameLabel.Size = UDim2.new(1,0,0.6,0)
-    nameLabel.Text = obj.Name
-    nameLabel.TextColor3 = colors[rarity] or Color3.new(1,1,1)
-    nameLabel.TextScaled = true
-    nameLabel.Font = Enum.Font.GothamBold
-    
-    local rarityLabel = Instance.new("TextLabel", bg)
-    rarityLabel.Size = UDim2.new(1,0,0.4,0)
-    rarityLabel.Position = UDim2.new(0,0,0.6,0)
-    rarityLabel.Text = rarity
-    rarityLabel.TextColor3 = Color3.new(1,1,1)
-    rarityLabel.TextScaled = true
-    rarityLabel.Font = Enum.Font.Gotham
-    
-    table.insert(ESP, {obj = obj, hl = highlight, bb = billboard})
-end
-
-local function clearESP()
-    for _, e in ipairs(ESP) do
-        pcall(function()
-            e.hl:Destroy()
-            e.bb:Destroy()
-        end)
-    end
-    ESP = {}
-end
-
-local function updateESP()
-    if not _G.ESPEnabled then return end
-    clearESP()
-    for _, o in pairs(workspace:GetDescendants()) do
-        if o:IsA("BasePart") and o.Name and o.Parent and not o.Parent:IsA("Player") then
-            local r = getRarity(o.Name)
-            if r then createESP(o, r) end
-        end
-    end
-end
-
 --== CONFIG ==--
-local Options = {
+local Config = {
     Farm = false,
     FlySpeed = 30,
     UnderDepth = 0,
     BasePos = Vector3.new(0,5,50),
     TargetRarity = "Celestial",
     RemoveWalls = false,
-    RemoveVIP = false
+    RemoveVIP = false,
+    ESPEnabled = false
 }
+
+--== CREATE WINDOW ==--
+local Window = _G.SpeedHubX:CreateWindow({
+    Name = "🧠 BRAINROT HUB",
+    Subtitle = "by Xulur",
+    LoadingTitle = "Loading...",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "BrainrotHub",
+        FileName = "Config"
+    }
+})
+
+--== HOME TAB ==--
+local HomeTab = Window:CreateTab("🏠 HOME")
+local HomeSection = HomeTab:CreateSection("Info")
+
+HomeSection:CreateButton("📱 DISCORD", function()
+    setclipboard("discord.gg/brainrothub")
+    _G.SpeedHubX:Notify("Discord link copied!")
+end)
+
+--== FARM TAB ==--
+local FarmTab = Window:CreateTab("⚙️ FARM")
+local FarmSection = FarmTab:CreateSection("Auto Farm Settings")
+
+FarmSection:CreateToggle("🚀 Auto Farm", function(value)
+    Config.Farm = value
+    _G.SpeedHubX:Notify(value and "Farm ON" or "Farm OFF")
+end)
+
+FarmSection:CreateDropdown("🎯 Target Rarity", {
+    "Common", "Uncommon", "Rare", "Epic", "Legendary",
+    "Mythical", "Cosmic", "Secret", "Celestial", "Divine", "Infinity"
+}, function(option)
+    Config.TargetRarity = option
+end)
+
+FarmSection:CreateSlider("⚡ Fly Speed", 10, 50, function(value)
+    Config.FlySpeed = value
+end)
+
+FarmSection:CreateSlider("📏 Underground Depth", 0, 20, function(value)
+    Config.UnderDepth = value
+end)
+
+--== ESP TAB ==--
+local ESPTab = Window:CreateTab("👁️ ESP")
+local ESPSection = ESPTab:CreateSection("ESP Settings")
+
+ESPSection:CreateToggle("Enable ESP", function(value)
+    Config.ESPEnabled = value
+    _G.SpeedHubX:Notify(value and "ESP ON" or "ESP OFF")
+end)
+
+--== WALL TAB ==--
+local WallTab = Window:CreateTab("🧱 WALLS")
+local WallSection = WallTab:CreateSection("Remove Obstacles")
+
+WallSection:CreateToggle("Remove Walls", function(value)
+    Config.RemoveWalls = value
+end)
+
+WallSection:CreateToggle("Remove VIP", function(value)
+    Config.RemoveVIP = value
+end)
+
+--== INFO TAB ==--
+local InfoTab = Window:CreateTab("📊 INFO")
+local InfoSection = InfoTab:CreateSection("Lucky Blox Info")
+
+InfoSection:CreateLabel("• Common - Legendary: Drop biasa")
+InfoSection:CreateLabel("• Mythical: Drop Mythical")
+InfoSection:CreateLabel("• Cosmic: Drop Cosmic")
+InfoSection:CreateLabel("• Secret: Drop Secret")
+InfoSection:CreateLabel("• Celestial: Wacky Waves")
+InfoSection:CreateLabel("• Divine: Admin Abuse")
+InfoSection:CreateLabel("• Infinity: Admin Abuse (langka)")
 
 --== ANTI AFK ==--
 spawn(function()
@@ -147,7 +153,7 @@ end
 local function findTarget()
     for _, obj in pairs(workspace:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name and obj.Parent and not obj.Parent:IsA("Player") then
-            if getRarity(obj.Name) == Options.TargetRarity then
+            if getRarity(obj.Name) == Config.TargetRarity then
                 return obj
             end
         end
@@ -175,7 +181,7 @@ end
 --== FARM LOOP ==--
 spawn(function()
     while wait(0.5) do
-        if Options.Farm then
+        if Config.Farm then
             pcall(function()
                 if not P.Character then return end
                 local hrp = P.Character.HumanoidRootPart
@@ -183,12 +189,12 @@ spawn(function()
                 
                 if target then
                     -- Turun
-                    flyTo(Vector3.new(hrp.Position.X, Options.UnderDepth, hrp.Position.Z), 1)
+                    flyTo(Vector3.new(hrp.Position.X, Config.UnderDepth, hrp.Position.Z), 1)
                     
                     -- Terbang ke target
-                    local targetUnder = Vector3.new(target.Position.X, Options.UnderDepth, target.Position.Z)
-                    local dist = (targetUnder - Vector3.new(hrp.Position.X, Options.UnderDepth, hrp.Position.Z)).Magnitude
-                    flyTo(targetUnder, dist / Options.FlySpeed)
+                    local targetUnder = Vector3.new(target.Position.X, Config.UnderDepth, target.Position.Z)
+                    local dist = (targetUnder - Vector3.new(hrp.Position.X, Config.UnderDepth, hrp.Position.Z)).Magnitude
+                    flyTo(targetUnder, dist / Config.FlySpeed)
                     
                     -- Naik ke target
                     flyTo(target.Position, 1)
@@ -198,15 +204,15 @@ spawn(function()
                     wait(0.5)
                     
                     -- Turun
-                    flyTo(Vector3.new(target.Position.X, Options.UnderDepth, target.Position.Z), 1)
+                    flyTo(Vector3.new(target.Position.X, Config.UnderDepth, target.Position.Z), 1)
                     
                     -- Kembali ke base
-                    local baseUnder = Vector3.new(Options.BasePos.X, Options.UnderDepth, Options.BasePos.Z)
-                    local returnDist = (baseUnder - Vector3.new(target.Position.X, Options.UnderDepth, target.Position.Z)).Magnitude
-                    flyTo(baseUnder, returnDist / Options.FlySpeed)
+                    local baseUnder = Vector3.new(Config.BasePos.X, Config.UnderDepth, Config.BasePos.Z)
+                    local returnDist = (baseUnder - Vector3.new(target.Position.X, Config.UnderDepth, target.Position.Z)).Magnitude
+                    flyTo(baseUnder, returnDist / Config.FlySpeed)
                     
                     -- Naik ke base
-                    flyTo(Options.BasePos, 1)
+                    flyTo(Config.BasePos, 1)
                 end
             end)
         end
@@ -221,12 +227,12 @@ spawn(function()
                 if obj:IsA("BasePart") and obj.Name then
                     local n = obj.Name:lower()
                     
-                    if Options.RemoveWalls and (n:find("wall") or n:find("dinding") or n:find("tembok") or n:find("pagar") or n:find("fence")) and not n:find("vip") then
+                    if Config.RemoveWalls and (n:find("wall") or n:find("dinding") or n:find("tembok") or n:find("pagar") or n:find("fence")) and not n:find("vip") then
                         obj.CanCollide = false
                         obj.Transparency = 1
                     end
                     
-                    if Options.RemoveVIP and (n:find("vip") or n:find("v.i.p")) then
+                    if Config.RemoveVIP and (n:find("vip") or n:find("v.i.p")) then
                         obj.CanCollide = false
                         obj.Transparency = 1
                     end
@@ -236,135 +242,65 @@ spawn(function()
     end
 end)
 
+--== ESP FUNCTION ==--
+local function updateESP()
+    if not Config.ESPEnabled then return end
+    
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Name and obj.Parent and not obj.Parent:IsA("Player") then
+            local rarity = getRarity(obj.Name)
+            if rarity then
+                -- Color based on rarity
+                local color
+                if rarity == "Common" then color = Color3.fromRGB(128,128,128)
+                elseif rarity == "Uncommon" then color = Color3.fromRGB(0,255,0)
+                elseif rarity == "Rare" then color = Color3.fromRGB(0,0,255)
+                elseif rarity == "Epic" then color = Color3.fromRGB(128,0,128)
+                elseif rarity == "Legendary" then color = Color3.fromRGB(255,165,0)
+                elseif rarity == "Mythical" then color = Color3.fromRGB(255,192,203)
+                elseif rarity == "Cosmic" then color = Color3.fromRGB(0,255,255)
+                elseif rarity == "Secret" then color = Color3.fromRGB(255,0,255)
+                elseif rarity == "Celestial" then color = Color3.fromRGB(255,215,0)
+                elseif rarity == "Divine" then color = Color3.fromRGB(255,0,0)
+                elseif rarity == "Infinity" then color = Color3.fromRGB(255,255,255)
+                end
+                
+                if color then
+                    local highlight = Instance.new("Highlight")
+                    highlight.FillColor = color
+                    highlight.OutlineColor = Color3.new(1,1,1)
+                    highlight.FillTransparency = 0.5
+                    highlight.Parent = obj
+                    
+                    local billboard = Instance.new("BillboardGui")
+                    billboard.Size = UDim2.new(0,150,0,30)
+                    billboard.StudsOffset = Vector3.new(0,2,0)
+                    billboard.AlwaysOnTop = true
+                    billboard.Parent = obj
+                    
+                    local text = Instance.new("TextLabel", billboard)
+                    text.Size = UDim2.new(1,0,1,0)
+                    text.BackgroundTransparency = 1
+                    text.Text = obj.Name
+                    text.TextColor3 = color
+                    text.TextScaled = true
+                    text.Font = Enum.Font.GothamBold
+                    text.TextStrokeTransparency = 0.3
+                end
+            end
+        end
+    end
+end
+
 --== ESP LOOP ==--
 spawn(function()
     while wait(2) do
-        if _G.ESPEnabled then
+        if Config.ESPEnabled then
             pcall(updateESP)
         end
     end
 end)
 
---== LINORIA WINDOW ==--
-local Window = Library:CreateWindow({
-    Title = "🧠 Brainrot Hub • Xulur",
-    Center = true,
-    AutoShow = true,
-    TabPadding = 8,
-    MenuFadeTime = 0.2
-})
-
---== HOME TAB ==--
-local HomeTab = Window:AddTab("🏠 Home")
-local HomeGroup = HomeTab:AddLeftGroupbox("Info")
-
-HomeGroup:AddButton({
-    Text = "📱 Discord",
-    Func = function()
-        setclipboard("discord.gg/brainrothub")
-        Library:Notify("Discord link copied!")
-    end
-})
-
---== MAIN TAB ==--
-local MainTab = Window:AddTab("📋 Main")
-local FarmGroup = MainTab:AddLeftGroupbox("Auto Farm")
-
-FarmGroup:AddToggle("FarmToggle", {
-    Text = "🚀 Auto Farm",
-    Default = false,
-    Callback = function(v) Options.Farm = v end
-})
-
-FarmGroup:AddDropdown("RarityDropdown", {
-    Text = "🎯 Target Rarity",
-    Values = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical", "Cosmic", "Secret", "Celestial", "Divine", "Infinity"},
-    Default = 9, -- Celestial
-    Callback = function(v) Options.TargetRarity = v end
-})
-
-FarmGroup:AddSlider("SpeedSlider", {
-    Text = "⚡ Fly Speed",
-    Default = 30,
-    Min = 10,
-    Max = 50,
-    Rounding = 1,
-    Callback = function(v) Options.FlySpeed = v end
-})
-
-FarmGroup:AddSlider("DepthSlider", {
-    Text = "📏 Underground Depth",
-    Default = 0,
-    Min = 0,
-    Max = 20,
-    Rounding = 1,
-    Callback = function(v) Options.UnderDepth = v end
-})
-
---== ESP TAB ==--
-local ESPTab = Window:AddTab("👁️ ESP")
-local ESPGroup = ESPTab:AddLeftGroupbox("ESP Settings")
-
-ESPGroup:AddToggle("ESPToggle", {
-    Text = "Enable ESP",
-    Default = false,
-    Callback = function(v)
-        _G.ESPEnabled = v
-        if v then updateESP() else clearESP() end
-    end
-})
-
---== WALL TAB ==--
-local WallTab = Window:AddTab("🧱 Walls")
-local WallGroup = WallTab:AddLeftGroupbox("Remove Obstacles")
-
-WallGroup:AddToggle("WallToggle", {
-    Text = "Remove Walls",
-    Default = false,
-    Callback = function(v) Options.RemoveWalls = v end
-})
-
-WallGroup:AddToggle("VIPToggle", {
-    Text = "Remove VIP Barriers",
-    Default = false,
-    Callback = function(v) Options.RemoveVIP = v end
-})
-
---== INFO TAB ==--
-local InfoTab = Window:AddTab("📊 Info")
-local InfoGroup = InfoTab:AddLeftGroupbox("Lucky Blox Info")
-
-InfoGroup:AddLabel("🎲 Lucky Blox Types:")
-InfoGroup:AddLabel("• Common s/d Legendary: Drop biasa")
-InfoGroup:AddLabel("• Mythical: Drop Mythical")
-InfoGroup:AddLabel("• Cosmic: Drop Cosmic")
-InfoGroup:AddLabel("• Secret: Drop Secret")
-InfoGroup:AddLabel("• Celestial: Wacky Waves")
-InfoGroup:AddLabel("• Divine: Admin Abuse")
-InfoGroup:AddLabel("• Infinity: Admin Abuse (langka)")
-InfoGroup:AddLabel("• Radioactive/UFO: Event")
-
---== SETTINGS TAB (OTOMATIS DARI LINORIA) ==--
-local SettingsTab = Window:AddTab("⚙️ Settings")
-local MenuGroup = SettingsTab:AddLeftGroupbox("Menu Settings")
-
-MenuGroup:AddButton({
-    Text = "Toggle UI",
-    Func = function() Library:ToggleUI() end
-})
-
-Library:SetWatermark("🧠 Brainrot Hub • Xulur")
-
--- Load managers
-ThemeManager:SetLibrary(Library)
-SaveManager:SetLibrary(Library)
-SaveManager:IgnoreThemeSettings()
-SaveManager:SetFolder("BrainrotHub")
-ThemeManager:SetFolder("BrainrotHub")
-
-SaveManager:BuildConfigSection(SettingsTab:AddLeftGroupbox("Configuration"))
-ThemeManager:ApplyToGroupbox(MenuGroup)
-
 -- Finish
-Library:Notify("✅ Brainrot Hub Loaded!")
-print("✅ BRAINROT HUB - LINORIA EDITION LOADED")
+_G.SpeedHubX:Notify("✅ Brainrot Hub Loaded!")
+print("✅ BRAINROT HUB - SPEED HUB UI LOADED")
