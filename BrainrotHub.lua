@@ -1,7 +1,8 @@
 --[[
-    BRAINROT HUB - COMPRESSED EDITION (505 baris)
-    6 Menu: HOME, MAIN, AUTO, PERF, MISC, SERVER
-    Fitur: Bring Pattern M, Event Tokens, God Mode 2-3 wave, Anti AFK auto ON
+    BRAINROT HUB - CENTER EDITION
+    Posisi: Tengah layar
+    Tombol: Minimize (-) dan Close (X)
+    Minimize: Muncul tombol kecil di kanan bawah
 ]]
 
 local player = game:GetService("Players").LocalPlayer
@@ -9,12 +10,13 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "BrainrotHub"
 gui.Parent = player:FindFirstChild("PlayerGui") or game:GetService("CoreGui")
 gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 -- ==================================================
--- KONFIGURASI
+-- KONFIGURASI (SINGKAT)
 -- ==================================================
 getgenv().C = {
-    Bring = false, Money = false, God = false, Wall = false, VIP = false,
+    Bring = false, Money = false, God = false, Wall = false, VIP = false, ReduceLag = false,
     Event = {m=false, a=false, c=false, u=false, r=false},
     Filter = {common=true, unc=true, rare=true, epic=true, leg=true, cel=true, div=true, inf=true, luck=true}
 }
@@ -29,7 +31,7 @@ spawn(function() while wait(60) do
 end end)
 
 -- ==================================================
--- BRING SYSTEM (PATTERN M)
+-- BRING SYSTEM
 -- ==================================================
 spawn(function() while wait(0.3) do if getgenv().C.Bring then pcall(function()
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -48,10 +50,7 @@ spawn(function() while wait(0.3) do if getgenv().C.Bring then pcall(function()
                     bring = true
                 end
                 if bring then
-                    local t = tick() % 3
-                    if t < 1 then o.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y-15, hrp.Position.Z)
-                    elseif t < 2 then o.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y+10, hrp.Position.Z)
-                    else o.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y-15, hrp.Position.Z) end
+                    o.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y - 15, hrp.Position.Z)
                     wait(0.03)
                 end
             end
@@ -60,7 +59,7 @@ spawn(function() while wait(0.3) do if getgenv().C.Bring then pcall(function()
 end) end end end)
 
 -- ==================================================
--- COLLECT MONEY & EVENT TOKENS
+-- COLLECT MONEY & EVENT
 -- ==================================================
 spawn(function() while wait(0.5) do pcall(function()
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -95,72 +94,125 @@ spawn(function() while wait(2) do pcall(function()
 end) end end)
 
 -- ==================================================
--- GOD MODE (2-3 WAVE)
+-- UI UTAMA (TENGAH)
 -- ==================================================
-spawn(function() local wave = 0 while wait(1) do if getgenv().C.God then pcall(function()
-    for _, o in pairs(workspace:GetDescendants()) do
-        if o:IsA("BasePart") and (o.Name:lower():find("water") or o.Name:lower():find("wave")) then
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                local hrp = player.Character.HumanoidRootPart
-                if (o.Position - hrp.Position).Magnitude < 20 then
-                    wave = wave + 1
-                    if wave <= 3 then hrp.Velocity = Vector3.new(0,50,0)
-                    else getgenv().C.God = false wave = 0 end
-                end
-            end
-        end
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 600, 0, 450)
+main.Position = UDim2.new(0.5, -300, 0.5, -225)
+main.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
+main.BackgroundTransparency = 0.1
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.Visible = true  -- Awalnya visible
+
+-- Shadow
+local shadow = Instance.new("Frame", main)
+shadow.Size = UDim2.new(1, 15, 1, 15)
+shadow.Position = UDim2.new(0, -8, 0, -8)
+shadow.BackgroundColor3 = Color3.new(0,0,0)
+shadow.BackgroundTransparency = 0.6
+shadow.BorderSizePixel = 0
+shadow.ZIndex = -1
+
+-- Header
+local header = Instance.new("Frame", main)
+header.Size = UDim2.new(1, 0, 0, 45)
+header.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+header.BorderSizePixel = 0
+
+local title = Instance.new("TextLabel", header)
+title.Size = UDim2.new(1, -80, 1, 0)
+title.Position = UDim2.new(0, 15, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "🧠 BRAINROT HUB"
+title.TextColor3 = Color3.fromRGB(100, 200, 255)
+title.TextXAlignment = "Left"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+
+-- ==================================================
+-- TOMBOL MINIMIZE & CLOSE
+-- ==================================================
+local minimize = Instance.new("TextButton", header)
+minimize.Size = UDim2.new(0, 30, 0, 30)
+minimize.Position = UDim2.new(1, -70, 0, 7)
+minimize.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+minimize.BorderSizePixel = 0
+minimize.Text = "-"
+minimize.TextColor3 = Color3.white
+minimize.TextScaled = true
+minimize.Font = Enum.Font.GothamBold
+minimize.BackgroundTransparency = 0.3
+
+local close = Instance.new("TextButton", header)
+close.Size = UDim2.new(0, 30, 0, 30)
+close.Position = UDim2.new(1, -35, 0, 7)
+close.BackgroundColor3 = Color3.fromRGB(210, 60, 60)
+close.BorderSizePixel = 0
+close.Text = "✕"
+close.TextColor3 = Color3.white
+close.TextScaled = true
+close.Font = Enum.Font.GothamBold
+
+-- ==================================================
+-- TOMBOL MINIMIZED (MUNCUL KALO DI-MINIMIZE)
+-- ==================================================
+local miniBtn = Instance.new("TextButton", gui)
+miniBtn.Size = UDim2.new(0, 50, 0, 50)
+miniBtn.Position = UDim2.new(1, -60, 1, -60)  -- Kanan bawah
+miniBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+miniBtn.BorderSizePixel = 0
+miniBtn.Text = "🧠"
+miniBtn.TextColor3 = Color3.white
+miniBtn.TextScaled = true
+miniBtn.Font = Enum.Font.GothamBold
+miniBtn.BackgroundTransparency = 0.2
+miniBtn.Visible = false  -- Awalnya sembunyi
+
+-- Hover effect
+miniBtn.MouseEnter:Connect(function()
+    miniBtn.BackgroundColor3 = Color3.fromRGB(150, 150, 255)
+end)
+miniBtn.MouseLeave:Connect(function()
+    miniBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+end)
+
+-- ==================================================
+-- FUNGSI MINIMIZE
+-- ==================================================
+local minimized = false
+local originalContent = {}
+
+minimize.MouseButton1Click:Connect(function()
+    if not minimized then
+        -- Minimize: sembunyiin main, munculin miniBtn
+        main.Visible = false
+        miniBtn.Visible = true
+        minimized = true
     end
-end) end end end)
+end)
+
+-- Klik tombol mini buat munculin lagi
+miniBtn.MouseButton1Click:Connect(function()
+    main.Visible = true
+    miniBtn.Visible = false
+    minimized = false
+end)
+
+-- Close button
+close.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
 
 -- ==================================================
--- REDUCE LAG
+-- MENU BAR (SINGKAT)
 -- ==================================================
-spawn(function() while wait(3) do if getgenv().C.ReduceLag then pcall(function()
-    settings().Rendering.QualityLevel = 1
-    game:GetService("Lighting").GlobalShadows = false
-    for _, o in pairs(workspace:GetDescendants()) do
-        if o:IsA("ParticleEmitter") or o:IsA("Smoke") or o:IsA("Fire") then o.Enabled = false end
-    end
-end) end end end)
-
--- ==================================================
--- UI FRAME
--- ==================================================
-local f = Instance.new("Frame", gui)
-f.Size = UDim2.new(0, 600, 0, 400)
-f.Position = UDim2.new(0.5, -300, 0.8, -200)
-f.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
-f.Active = true; f.Draggable = true
-
-local h = Instance.new("Frame", f)
-h.Size = UDim2.new(1, 0, 0, 40)
-h.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
-
-local t = Instance.new("TextLabel", h)
-t.Size = UDim2.new(1, -40, 1, 0)
-t.Position = UDim2.new(0, 10, 0, 0)
-t.BackgroundTransparency = 1
-t.Text = "🧠 BRAINROT HUB • ULTIMATE"
-t.TextColor3 = Color3.fromRGB(100, 200, 255)
-t.TextXAlignment = "Left"
-t.Font = Enum.Font.GothamBold
-t.TextSize = 18
-
-local c = Instance.new("TextButton", h)
-c.Size = UDim2.new(0, 30, 0, 30)
-c.Position = UDim2.new(1, -35, 0, 5)
-c.BackgroundColor3 = Color3.fromRGB(210, 60, 60)
-c.Text = "✕"
-c.TextColor3 = Color3.white
-c.MouseButton1Click:Connect(function() gui:Destroy() end)
-
--- ==================================================
--- MENU BAR
--- ==================================================
-local mb = Instance.new("Frame", f)
-mb.Size = UDim2.new(1, 0, 0, 35)
-mb.Position = UDim2.new(0, 0, 0, 40)
+local mb = Instance.new("Frame", main)
+mb.Size = UDim2.new(1, 0, 0, 40)
+mb.Position = UDim2.new(0, 0, 0, 45)
 mb.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+mb.BorderSizePixel = 0
 
 local menus = {"🏠 HOME", "📋 MAIN", "🤖 AUTO", "⚡ PERF", "🛠️ MISC", "🌐 SERVER"}
 local contents = {}
@@ -171,11 +223,12 @@ for i = 1, 6 do
     btn.Position = UDim2.new(0, 5 + (i-1)*100, 0, 0)
     btn.Text = menus[i]
     btn.TextColor3 = Color3.fromRGB(220,220,220)
-    btn.BackgroundColor3 = i == 1 and Color3.fromRGB(45,45,60) or Color3.fromRGB(28,28,38)
+    btn.BackgroundColor3 = i == 1 and Color3.fromRGB(50,50,70) or Color3.fromRGB(30,30,40)
+    btn.BorderSizePixel = 0
     
-    local cont = Instance.new("ScrollingFrame", f)
-    cont.Size = UDim2.new(1, -20, 1, -120)
-    cont.Position = UDim2.new(0, 10, 0, 85)
+    local cont = Instance.new("ScrollingFrame", main)
+    cont.Size = UDim2.new(1, -20, 1, -130)
+    cont.Position = UDim2.new(0, 10, 0, 90)
     cont.BackgroundTransparency = 1
     cont.Visible = i == 1
     cont.CanvasSize = UDim2.new(0,0,0,380)
@@ -185,20 +238,23 @@ for i = 1, 6 do
     
     btn.MouseButton1Click:Connect(function()
         for j = 1, 6 do contents[j].Visible = false end
-        for j, b in ipairs(mb:GetChildren()) do if b:IsA("TextButton") then b.BackgroundColor3 = Color3.fromRGB(28,28,38) end end
+        for _, b in pairs(mb:GetChildren()) do 
+            if b:IsA("TextButton") then b.BackgroundColor3 = Color3.fromRGB(30,30,40) end
+        end
         cont.Visible = true
-        btn.BackgroundColor3 = Color3.fromRGB(45,45,60)
+        btn.BackgroundColor3 = Color3.fromRGB(50,50,70)
     end)
 end
 
 -- ==================================================
 -- FUNGSI TOGGLE
 -- ==================================================
-local function tog(parent, text, y, def, cb)
+local function toggle(parent, text, y, def, cb)
     local bg = Instance.new("Frame", parent)
     bg.Size = UDim2.new(1, -20, 0, 40)
     bg.Position = UDim2.new(0, 10, 0, y)
     bg.BackgroundColor3 = Color3.fromRGB(25,25,35)
+    bg.BorderSizePixel = 0
     
     local l = Instance.new("TextLabel", bg)
     l.Size = UDim2.new(0, 160, 1, 0)
@@ -216,6 +272,7 @@ local function tog(parent, text, y, def, cb)
     btn.BackgroundColor3 = def and Color3.fromRGB(0,170,0) or Color3.fromRGB(75,75,85)
     btn.Text = def and "ON" or "OFF"
     btn.TextColor3 = Color3.white
+    btn.BorderSizePixel = 0
     
     local state = def
     btn.MouseButton1Click:Connect(function()
@@ -238,6 +295,7 @@ d.BackgroundColor3 = Color3.fromRGB(88,101,242)
 d.Text = "📱 JOIN DISCORD"
 d.TextColor3 = Color3.white
 d.Font = Enum.Font.GothamBold
+d.BorderSizePixel = 0
 d.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/brainrot") end)
 
 local yt = Instance.new("TextButton", contents[1])
@@ -247,14 +305,15 @@ yt.BackgroundColor3 = Color3.fromRGB(255,0,0)
 yt.Text = "▶️ SUBSCRIBE YOUTUBE"
 yt.TextColor3 = Color3.white
 yt.Font = Enum.Font.GothamBold
+yt.BorderSizePixel = 0
 yt.MouseButton1Click:Connect(function() setclipboard("https://youtube.com/c/brainrot") end)
 
 -- ==================================================
--- MAIN MENU (Bring + Money + Rarity)
+-- MAIN MENU
 -- ==================================================
 y = 10
-y = tog(contents[2], "🚀 Bring System", y, false, function(s) getgenv().C.Bring = s end)
-y = tog(contents[2], "💰 Collect Money", y, false, function(s) getgenv().C.Money = s end)
+y = toggle(contents[2], "🚀 Bring System", y, false, function(s) getgenv().C.Bring = s end)
+y = toggle(contents[2], "💰 Collect Money", y, false, function(s) getgenv().C.Money = s end)
 
 local rl = Instance.new("TextLabel", contents[2])
 rl.Size = UDim2.new(1, -20, 0, 25)
@@ -268,7 +327,6 @@ y = y + 30
 
 local rarities = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial", "Divine", "Infinity", "Lucky Blox"}
 local rkeys = {"common", "unc", "rare", "epic", "leg", "cel", "div", "inf", "luck"}
-local rx = 0
 for i = 1, 9 do
     local col = i % 2 == 1 and 0.02 or 0.52
     local row = math.floor((i-1)/2)
@@ -276,6 +334,7 @@ for i = 1, 9 do
     bg.Size = UDim2.new(0.45, 0, 0, 30)
     bg.Position = UDim2.new(col, 0, 0, y + row*35)
     bg.BackgroundColor3 = Color3.fromRGB(22,22,30)
+    bg.BorderSizePixel = 0
     
     local l = Instance.new("TextLabel", bg)
     l.Size = UDim2.new(0, 90, 1, 0)
@@ -293,6 +352,7 @@ for i = 1, 9 do
     b.Text = "ON"
     b.TextColor3 = Color3.white
     b.TextSize = 12
+    b.BorderSizePixel = 0
     
     local state = true
     b.MouseButton1Click:Connect(function()
@@ -302,39 +362,39 @@ for i = 1, 9 do
         getgenv().C.Filter[rkeys[i]] = state
     end)
 end
-y = y + 170
 
 -- ==================================================
--- AUTO MENU (Event Tokens)
+-- AUTO MENU
 -- ==================================================
 y = 10
-local events = {"💰 Money Event", "🎮 Arcade Event", "🍬 Candy Event", "👽 UFO Event", "☢️ Radioactive"}
-local ekeys = {"m", "a", "c", "u", "r"}
-for i = 1, 5 do
-    y = tog(contents[3], events[i], y, false, function(s) getgenv().C.Event[ekeys[i]] = s end)
-end
+y = toggle(contents[3], "💰 Money Event", y, false, function(s) getgenv().C.Event.m = s end)
+y = toggle(contents[3], "🎮 Arcade Event", y, false, function(s) getgenv().C.Event.a = s end)
+y = toggle(contents[3], "🍬 Candy Event", y, false, function(s) getgenv().C.Event.c = s end)
+y = toggle(contents[3], "👽 UFO Event", y, false, function(s) getgenv().C.Event.u = s end)
+y = toggle(contents[3], "☢️ Radioactive", y, false, function(s) getgenv().C.Event.r = s end)
 
 -- ==================================================
 -- PERF MENU
 -- ==================================================
 y = 10
-y = tog(contents[4], "⚡ Reduce Lag", y, false, function(s) getgenv().C.ReduceLag = s end)
+y = toggle(contents[4], "⚡ Reduce Lag", y, false, function(s) getgenv().C.ReduceLag = s end)
 
 -- ==================================================
 -- MISC MENU
 -- ==================================================
 y = 10
-y = tog(contents[5], "🛡️ God Mode (2-3 wave)", y, false, function(s) getgenv().C.God = s end)
-y = tog(contents[5], "🧱 Remove Wall", y, false, function(s) getgenv().C.Wall = s end)
-y = tog(contents[5], "💎 Remove VIP Wall", y, false, function(s) getgenv().C.VIP = s end)
+y = toggle(contents[5], "🛡️ God Mode (2-3 wave)", y, false, function(s) getgenv().C.God = s end)
+y = toggle(contents[5], "🧱 Remove Wall", y, false, function(s) getgenv().C.Wall = s end)
+y = toggle(contents[5], "💎 Remove VIP Wall", y, false, function(s) getgenv().C.VIP = s end)
 
 -- ==================================================
--- SERVER MENU (Anti AFK)
+-- SERVER MENU
 -- ==================================================
 local af = Instance.new("Frame", contents[6])
 af.Size = UDim2.new(1, -20, 0, 50)
 af.Position = UDim2.new(0, 10, 0, 10)
 af.BackgroundColor3 = Color3.fromRGB(25,35,25)
+af.BorderSizePixel = 0
 
 local l = Instance.new("TextLabel", af)
 l.Size = UDim2.new(0, 150, 1, 0)
@@ -350,11 +410,13 @@ local st = Instance.new("Frame", af)
 st.Size = UDim2.new(0, 55, 0, 28)
 st.Position = UDim2.new(1, -65, 0.5, -14)
 st.BackgroundColor3 = Color3.fromRGB(0,200,0)
+st.BorderSizePixel = 0
 
 local cr = Instance.new("Frame", st)
 cr.Size = UDim2.new(0, 22, 0, 22)
 cr.Position = UDim2.new(1, -27, 0.5, -11)
 cr.BackgroundColor3 = Color3.white
+cr.BorderSizePixel = 0
 
 local inf = Instance.new("TextLabel", contents[6])
 inf.Size = UDim2.new(1, -20, 0, 30)
@@ -367,10 +429,11 @@ inf.TextXAlignment = "Left"
 -- ==================================================
 -- STATUS BAR
 -- ==================================================
-local sb = Instance.new("Frame", f)
+local sb = Instance.new("Frame", main)
 sb.Size = UDim2.new(1, 0, 0, 25)
 sb.Position = UDim2.new(0, 0, 1, -25)
 sb.BackgroundColor3 = Color3.fromRGB(10,10,15)
+sb.BorderSizePixel = 0
 
 local stx = Instance.new("TextLabel", sb)
 stx.Size = UDim2.new(1, -10, 1, 0)
@@ -385,4 +448,4 @@ spawn(function() while wait(0.5) do
     stx.Text = "🟢 Anti AFK: ON • Bring: " .. (getgenv().C.Bring and "ON" or "OFF")
 end end)
 
-print("✅ BRAINROT HUB LOADED - 505 LINES")
+print("✅ BRAINROT HUB - MINIMIZE WITH BUTTON LOADED")
