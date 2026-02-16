@@ -1,7 +1,6 @@
 --[[
     BRAINROT HUB - RAYFIELD EDITION
-    Library: Rayfield (Sirius Menu)
-    Fitur: Bring Infinity/Divine/Celestial/Lucky Blox + Event Tokens + Anti AFK
+    Fitur: Hold F untuk bring brainrot (tween fly)
 ]]
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -12,7 +11,8 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 getgenv().C = {
     Bring = false, Money = false, God = false, Wall = false, VIP = false, ReduceLag = false,
     Event = {m=false, a=false, c=false, u=false, r=false},
-    Filter = {common=true, unc=true, rare=true, epic=true, leg=true, cel=true, div=true, inf=true, luck=true}
+    Filter = {common=true, unc=true, rare=true, epic=true, leg=true, cel=true, div=true, inf=true, luck=true},
+    HoldF = false
 }
 
 -- ==================================================
@@ -28,12 +28,94 @@ spawn(function() while wait(60) do
 end end)
 
 -- ==================================================
+-- TWEEN SERVICE BUAT FLY HALUS
+-- ==================================================
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- ==================================================
+-- FUNGSI BRING DENGAN TWEEN (HOLD F)
+-- ==================================================
+local function bringWithTween(obj, targetPos)
+    if not obj or not obj:IsA("BasePart") then return end
+    
+    -- Info tween (terbang halus)
+    local tweenInfo = TweenInfo.new(
+        0.5,  -- Duration (0.5 detik)
+        Enum.EasingStyle.Quad,
+        Enum.EasingDirection.Out,
+        0,
+        false,
+        0
+    )
+    
+    -- Buat tween
+    local tween = TweenService:Create(obj, tweenInfo, {CFrame = CFrame.new(targetPos)})
+    tween:Play()
+end
+
+-- ==================================================
+-- DETECT HOLD F
+-- ==================================================
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        getgenv().C.HoldF = true
+        
+        -- Mulai loop bring selama F di-hold
+        spawn(function()
+            while getgenv().C.HoldF do
+                pcall(function()
+                    local player = game.Players.LocalPlayer
+                    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local hrp = player.Character.HumanoidRootPart
+                        
+                        for _, obj in pairs(workspace:GetDescendants()) do
+                            if obj:IsA("BasePart") and obj.Name then
+                                local n = obj.Name:lower()
+                                local bring = false
+                                
+                                if (getgenv().C.Filter.common and n:find("common")) or 
+                                   (getgenv().C.Filter.unc and n:find("uncommon")) or
+                                   (getgenv().C.Filter.rare and n:find("rare")) or 
+                                   (getgenv().C.Filter.epic and n:find("epic")) or
+                                   (getgenv().C.Filter.leg and (n:find("legend") or n:find("leg"))) or
+                                   (getgenv().C.Filter.cel and (n:find("celestial") or n:find("celest"))) or
+                                   (getgenv().C.Filter.div and (n:find("divine") or n:find("div"))) or
+                                   (getgenv().C.Filter.inf and (n:find("infinity") or n:find("inf") or n:find("∞"))) or
+                                   (getgenv().C.Filter.luck and (n:find("lucky") or n:find("blox") or n:find("box"))) then
+                                    bring = true
+                                end
+                                
+                                if bring then
+                                    -- Posisi target (di deket player, bawah tanah)
+                                    local targetPos = Vector3.new(hrp.Position.X, hrp.Position.Y - 10, hrp.Position.Z)
+                                    bringWithTween(obj, targetPos)
+                                    task.wait(0.1)  -- Delay biar ga overload
+                                end
+                            end
+                        end
+                    end
+                end)
+                task.wait(0.2)
+            end
+        end)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.F then
+        getgenv().C.HoldF = false
+    end
+end)
+
+-- ==================================================
 -- CREATE WINDOW
 -- ==================================================
 local Window = Rayfield:CreateWindow({
     Name = "🧠 BRAINROT HUB • HOLLYWOOD",
     LoadingTitle = "BRAINROT HUB",
-    LoadingSubtitle = "by OxyX",
+    LoadingSubtitle = "Hold F to Collect",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "BrainrotHub",
@@ -61,8 +143,8 @@ local Window = Rayfield:CreateWindow({
 -- ==================================================
 Rayfield:Notify({
     Title = "Brainrot Hub Loaded!",
-    Content = "Anti AFK: ON | Tekan K untuk toggle UI",
-    Duration = 3.5,
+    Content = "HOLD F untuk bring brainrot (tween fly) | Tekan K untuk toggle UI",
+    Duration = 4,
     Image = 4483362458,
 })
 
@@ -102,14 +184,10 @@ HomeTab:CreateButton({
 local MainTab = Window:CreateTab("📋 MAIN", 4483362458)
 local MainSection = MainTab:CreateSection("Bring System")
 
--- Bring System Toggle
-MainTab:CreateToggle({
-    Name = "🚀 Bring System",
-    CurrentValue = false,
-    Flag = "BringToggle",
-    Callback = function(Value)
-        getgenv().C.Bring = Value
-    end,
+-- Info Hold F
+MainTab:CreateParagraph({
+    Title = "ℹ️ Cara Pakai",
+    Content = "HOLD F untuk bring brainrot\nTween fly halus (0.5 detik)"
 })
 
 -- Collect Money Toggle
@@ -125,7 +203,6 @@ MainTab:CreateToggle({
 -- Rarity Filter Section
 local RaritySection = MainTab:CreateSection("✨ RARITY FILTERS")
 
--- Rarity Toggles (2 kolom)
 MainTab:CreateToggle({
     Name = "Common",
     CurrentValue = true,
@@ -294,44 +371,7 @@ ServerTab:CreateParagraph({
 })
 
 -- ==================================================
--- BRING SYSTEM FUNCTION (BACKGROUND)
--- ==================================================
-spawn(function() 
-    while task.wait(0.3) do 
-        if getgenv().C.Bring then 
-            pcall(function()
-                local player = game.Players.LocalPlayer
-                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                    local hrp = player.Character.HumanoidRootPart
-                    for _, o in pairs(workspace:GetDescendants()) do
-                        if o:IsA("BasePart") and o.Name then
-                            local n = o.Name:lower()
-                            local bring = false
-                            if (getgenv().C.Filter.common and n:find("common")) or 
-                               (getgenv().C.Filter.unc and n:find("uncommon")) or
-                               (getgenv().C.Filter.rare and n:find("rare")) or 
-                               (getgenv().C.Filter.epic and n:find("epic")) or
-                               (getgenv().C.Filter.leg and (n:find("legend") or n:find("leg"))) or
-                               (getgenv().C.Filter.cel and (n:find("celestial") or n:find("celest"))) or
-                               (getgenv().C.Filter.div and (n:find("divine") or n:find("div"))) or
-                               (getgenv().C.Filter.inf and (n:find("infinity") or n:find("inf") or n:find("∞"))) or
-                               (getgenv().C.Filter.luck and (n:find("lucky") or n:find("blox") or n:find("box"))) then
-                                bring = true
-                            end
-                            if bring then
-                                o.CFrame = CFrame.new(hrp.Position.X, hrp.Position.Y - 15, hrp.Position.Z)
-                                task.wait(0.03)
-                            end
-                        end
-                    end
-                end
-            end)
-        end
-    end
-end)
-
--- ==================================================
--- COLLECT MONEY & EVENT FUNCTION
+-- COLLECT MONEY & EVENT FUNCTION (AUTO)
 -- ==================================================
 spawn(function() 
     while task.wait(0.5) do 
@@ -440,4 +480,5 @@ end)
 -- ==================================================
 Rayfield:LoadConfiguration()
 
-print("✅ BRAINROT HUB - RAYFIELD EDITION LOADED")
+print("✅ BRAINROT HUB - HOLD F + TWEEN FLY LOADED")
+print("🎯 HOLD F untuk bring brainrot (tween fly halus)")
