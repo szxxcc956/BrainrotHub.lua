@@ -1,11 +1,13 @@
 --[[
-    BRAINROT HUB - PLAYER FLY TO BRAINROT (UNDERGROUND)
-    - Player terbang gradual ke brainrot target
-    - Di bawah jalur tsunami (kedalaman 5-10 stud)
-    - Otomatis collect pas nyampe
+    BRAINROT HUB - SMOOTH TWEEN FLY
+    - Terbang ke atas (200 stud)
+    - Ambil brainrot
+    - Balik ke base
+    - FLY MULUS pake TweenService (ga spam jump)
 ]]
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local TweenService = game:GetService("TweenService")
 
 -- ==================================================
 -- KONFIGURASI
@@ -13,9 +15,8 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 getgenv().C = {
     -- Bring system
     BringEnabled = false,
-    UndergroundDepth = 8,
-    FlySpeed = 25,           -- Kecepatan player terbang
-    CollectDistance = 5,      -- Jarak collect otomatis
+    FlyHeight = 200,          -- Terbang ke atas 200 stud
+    FlySpeed = 2,             -- Durasi tween (detik)
     
     -- Rarity switches
     Common = true,
@@ -55,55 +56,67 @@ spawn(function() while wait(60) do
 end end)
 
 -- ==================================================
--- FUNGSI DETEKSI JALUR TSUNAMI
+-- FUNGSI FLY MULUS PAKE TWEEN
 -- ==================================================
-local function getTsunamiLevel()
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and (obj.Name:lower():find("water") or obj.Name:lower():find("tsunami") or obj.Name:lower():find("wave")) then
-            return obj.Position.Y
-        end
-    end
-    return 20
-end
-
--- ==================================================
--- FUNGSI TERBANG GRADUAL KE TARGET
--- ==================================================
-local function flyToTarget(targetPos)
+local function smoothFly(targetPos, duration)
     local player = game.Players.LocalPlayer
     if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
     
     local hrp = player.Character.HumanoidRootPart
-    local currentPos = hrp.Position
-    local distance = (targetPos - currentPos).Magnitude
+    local startPos = hrp.Position
     
-    -- Kalo udah deket, berhenti
-    if distance < getgenv().C.CollectDistance then
-        return true
-    end
+    -- Tween info (pake easing biar mulus)
+    local tweenInfo = TweenInfo.new(
+        duration,
+        Enum.EasingStyle.Quad,  -- Easing biar halus
+        Enum.EasingDirection.InOut,
+        0,
+        false,
+        0
+    )
     
-    -- Hitung arah dan langkah gerak
-    local direction = (targetPos - currentPos).Unit
-    local moveVector = direction * math.min(getgenv().C.FlySpeed, distance)
+    -- Buat tween
+    local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(targetPos)})
+    tween:Play()
     
-    -- Pindahkan player gradual
-    hrp.CFrame = hrp.CFrame + moveVector
-    return false
+    -- Tunggu sampe selesai
+    tween.Completed:Wait()
 end
 
 -- ==================================================
--- MAIN BRING LOOP (PLAYER TERBANG KE BRAINROT)
+-- FUNGSI SAVE BASE POSITION
+-- ==================================================
+local basePosition = nil
+
+local function saveBasePosition()
+    local player = game.Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        basePosition = player.Character.HumanoidRootPart.Position
+        Rayfield:Notify({
+            Title = "Base Position Saved",
+            Content = "Posisi base tersimpan",
+            Duration = 2
+        })
+    end
+end
+
+-- ==================================================
+-- MAIN BRING LOOP
 -- ==================================================
 local function bringBrainrot()
     spawn(function()
-        while task.wait(0.1) do
+        while task.wait(0.5) do
             if getgenv().C.BringEnabled then
                 pcall(function()
                     local player = game.Players.LocalPlayer
                     if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
                     
-                    local tsunamiLevel = getTsunamiLevel()
-                    local undergroundY = tsunamiLevel - getgenv().C.UndergroundDepth
+                    -- Kalo base position belum disimpan, save otomatis
+                    if not basePosition then
+                        basePosition = player.Character.HumanoidRootPart.Position
+                    end
+                    
+                    local hrp = player.Character.HumanoidRootPart
                     
                     -- Cari brainrot terdekat yang sesuai rarity
                     local closestTarget = nil
@@ -136,29 +149,60 @@ local function bringBrainrot()
                         end
                     end
                     
-                    -- Kalo ada target, terbang ke dia (di kedalaman tsunami)
+                    -- Kalo ada target
                     if closestTarget then
-                        local targetPos = Vector3.new(closestTarget.Position.X, undergroundY, closestTarget.Position.Z)
-                        local arrived = flyToTarget(targetPos)
+                        -- FASE 1: TERBANG KE ATAS (200 stud)
+                        local upPos = Vector3.new(hrp.Position.X, getgenv().C.FlyHeight, hrp.Position.Z)
+                        Rayfield:Notify({
+                            Title = "Flying Up",
+                            Content = "Naik ke ketinggian 200 stud",
+                            Duration = 1
+                        })
+                        smoothFly(upPos, getgenv().C.FlySpeed)
                         
-                        -- Kalo udah nyampe, collect otomatis (simulasi touch)
-                        if arrived then
-                            if closestTarget:FindFirstChild("TouchInterest") then
-                                local hrp = player.Character.HumanoidRootPart
-                                firetouchinterest(hrp, closestTarget, 0)
-                                task.wait(0.05)
-                                firetouchinterest(hrp, closestTarget, 1)
-                            end
+                        -- FASE 2: TERBANG KE TARGET (di ketinggian yang sama)
+                        local targetPos = Vector3.new(closestTarget.Position.X, getgenv().C.FlyHeight, closestTarget.Position.Z)
+                        Rayfield:Notify({
+                            Title = "Flying to Brainrot",
+                            Content = closestTarget.Name,
+                            Duration = 1
+                        })
+                        smoothFly(targetPos, getgenv().C.FlySpeed)
+                        
+                        -- FASE 3: TURUN AMBIL BRAINROT
+                        local collectPos = Vector3.new(closestTarget.Position.X, closestTarget.Position.Y + 3, closestTarget.Position.Z)
+                        smoothFly(collectPos, 1)
+                        
+                        -- Collect brainrot (simulasi touch)
+                        if closestTarget:FindFirstChild("TouchInterest") then
+                            firetouchinterest(hrp, closestTarget, 0)
+                            task.wait(0.1)
+                            firetouchinterest(hrp, closestTarget, 1)
+                        end
+                        
+                        Rayfield:Notify({
+                            Title = "Collected!",
+                            Content = closestTarget.Name,
+                            Duration = 1
+                        })
+                        
+                        -- FASE 4: BALIK KE BASE (dengan ketinggian 200 stud dulu)
+                        if basePosition then
+                            -- Naik lagi ke 200 stud
+                            local upAgain = Vector3.new(basePosition.X, getgenv().C.FlyHeight, basePosition.Z)
+                            smoothFly(upAgain, getgenv().C.FlySpeed)
                             
-                            -- Notifikasi kecil
+                            -- Turun ke base
+                            smoothFly(basePosition, getgenv().C.FlySpeed)
+                            
                             Rayfield:Notify({
-                                Title = "Collected!",
-                                Content = closestTarget.Name,
+                                Title = "Back to Base",
+                                Content = "Kembali ke posisi awal",
                                 Duration = 1
                             })
-                            
-                            task.wait(0.3)  -- Cooldown setelah collect
                         end
+                        
+                        task.wait(0.5)  -- Cooldown
                     end
                 end)
             end
@@ -170,7 +214,7 @@ end
 bringBrainrot()
 
 -- ==================================================
--- AUTO COLLECT MONEY DARI BASE
+-- AUTO COLLECT MONEY
 -- ==================================================
 spawn(function()
     while task.wait(1) do
@@ -232,9 +276,9 @@ end)
 -- CREATE WINDOW
 -- ==================================================
 local Window = Rayfield:CreateWindow({
-    Name = "🧠 BRAINROT HUB • PLAYER FLY",
+    Name = "🧠 BRAINROT HUB • SMOOTH FLY",
     LoadingTitle = "BRAINROT HUB",
-    LoadingSubtitle = "Player terbang ke brainrot (underground)",
+    LoadingSubtitle = "Tween Fly (Ga Spam Jump)",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "BrainrotHub",
@@ -253,7 +297,7 @@ local Window = Rayfield:CreateWindow({
 -- ==================================================
 Rayfield:Notify({
     Title = "Brainrot Hub Loaded!",
-    Content = "Player terbang ke brainrot (bawah jalur tsunami)",
+    Content = "Smooth Tween Fly - Ga Spam Jump",
     Duration = 4
 })
 
@@ -283,50 +327,42 @@ HomeTab:CreateButton({
 -- MAIN TAB
 -- ==================================================
 local MainTab = Window:CreateTab("📋 MAIN", 4483362458)
-local MainSection = MainTab:CreateSection("Player Fly System")
+local MainSection = MainTab:CreateSection("Smooth Fly System")
 
 MainTab:CreateToggle({
-    Name = "🚀 AKTIFKAN FLY TO BRAINROT",
+    Name = "🚀 AKTIFKAN FLY SYSTEM",
     CurrentValue = false,
     Flag = "BringToggle",
     Callback = function(Value)
         getgenv().C.BringEnabled = Value
-        Rayfield:Notify({
-            Title = Value and "Fly ON" or "Fly OFF",
-            Content = Value and "Player terbang ke brainrot (bawah jalur tsunami)" or "Dinonaktifkan",
-            Duration = 2
-        })
+    end,
+})
+
+MainTab:CreateButton({
+    Name = "📍 SAVE BASE POSITION",
+    Callback = function()
+        saveBasePosition()
     end,
 })
 
 MainTab:CreateSlider({
-    Name = "📏 Kedalaman (dari jalur tsunami)",
-    Range = {3, 15},
-    Increment = 1,
+    Name = "📏 Ketinggian Fly",
+    Range = {100, 500},
+    Increment = 10,
     Suffix = "stud",
-    CurrentValue = 8,
-    Flag = "DepthSlider",
-    Callback = function(v) getgenv().C.UndergroundDepth = v end,
+    CurrentValue = 200,
+    Flag = "HeightSlider",
+    Callback = function(v) getgenv().C.FlyHeight = v end,
 })
 
 MainTab:CreateSlider({
-    Name = "⚡ Kecepatan Terbang",
-    Range = {10, 50},
-    Increment = 5,
-    Suffix = "stud/detik",
-    CurrentValue = 25,
+    Name = "⚡ Durasi Fly (detik)",
+    Range = {1, 5},
+    Increment = 0.5,
+    Suffix = "detik",
+    CurrentValue = 2,
     Flag = "SpeedSlider",
     Callback = function(v) getgenv().C.FlySpeed = v end,
-})
-
-MainTab:CreateSlider({
-    Name = "📐 Jarak Collect",
-    Range = {3, 10},
-    Increment = 1,
-    Suffix = "stud",
-    CurrentValue = 5,
-    Flag = "CollectDist",
-    Callback = function(v) getgenv().C.CollectDistance = v end,
 })
 
 -- Money collect toggle
@@ -415,5 +451,5 @@ end)
 -- ==================================================
 Rayfield:LoadConfiguration()
 
-print("✅ BRAINROT HUB - PLAYER FLY TO BRAINROT LOADED")
-print("🚀 Player terbang gradual ke brainrot (bawah jalur tsunami)")
+print("✅ BRAINROT HUB - SMOOTH TWEEN FLY LOADED")
+print("🚀 Fly pake Tween (ga spam jump) - Naik 200 stud, ambil, balik base")
