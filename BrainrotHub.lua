@@ -1,10 +1,18 @@
---[[ BRAINROT HUB by Xulur - SPEED HUB UI ]]
+-- Anti Spawn
+if _G.BrainrotHubLoaded then return end
+_G.BrainrotHubLoaded = true
 
--- Load Speed Hub
+-- Load Speed Hub (tanpa key system)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/AhmadV99/Speed-Hub-X/main/Speed%20Hub%20X.lua", true))()
 
 -- Tunggu Speed Hub load
 repeat wait() until _G.SpeedHubX and _G.SpeedHubX.CreateWindow
+
+-- Bypass key system (paksa lewat)
+_G.SpeedHubX.KeySystem = {
+    Enabled = false,
+    Key = "freeforall"
+}
 
 -- Setup variables
 local T = game:GetService("TweenService")
@@ -250,7 +258,6 @@ local function updateESP()
         if obj:IsA("BasePart") and obj.Name and obj.Parent and not obj.Parent:IsA("Player") then
             local rarity = getRarity(obj.Name)
             if rarity then
-                -- Color based on rarity
                 local color
                 if rarity == "Common" then color = Color3.fromRGB(128,128,128)
                 elseif rarity == "Uncommon" then color = Color3.fromRGB(0,255,0)
