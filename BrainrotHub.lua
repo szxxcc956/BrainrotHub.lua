@@ -1,8 +1,8 @@
 --[[
-    BRAINROT HUB - UNDERGROUND BRING + MONEY COLLECTOR
-    - Bawa brainrot lewat bawah jalur tsunami
-    - Auto collect money dari base (display segipanjang)
-    - 1x per detik
+    BRAINROT HUB - PLAYER FLY TO BRAINROT (UNDERGROUND)
+    - Player terbang gradual ke brainrot target
+    - Di bawah jalur tsunami (kedalaman 5-10 stud)
+    - Otomatis collect pas nyampe
 ]]
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -13,10 +13,11 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 getgenv().C = {
     -- Bring system
     BringEnabled = false,
-    UndergroundDepth = 8,  -- Kedalaman dari jalur tsunami
-    BringSpeed = 0.3,
+    UndergroundDepth = 8,
+    FlySpeed = 25,           -- Kecepatan player terbang
+    CollectDistance = 5,      -- Jarak collect otomatis
     
-    -- Rarity switches (lengkap dari game)
+    -- Rarity switches
     Common = true,
     Uncommon = true,
     Rare = true,
@@ -30,7 +31,6 @@ getgenv().C = {
     
     -- Money collect
     AutoCollectMoney = false,
-    CollectInterval = 1,  -- 1 detik
     
     -- Other features
     God = false,
@@ -43,7 +43,7 @@ getgenv().C = {
 }
 
 -- ==================================================
--- ANTI AFK (SELALU ON)
+-- ANTI AFK
 -- ==================================================
 spawn(function() while wait(60) do 
     pcall(function() 
@@ -58,52 +58,106 @@ end end)
 -- FUNGSI DETEKSI JALUR TSUNAMI
 -- ==================================================
 local function getTsunamiLevel()
-    -- Deteksi permukaan air/tsunami
     for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and (obj.Name:lower():find("water") or obj.Name:lower():find("tsunami")) then
+        if obj:IsA("BasePart") and (obj.Name:lower():find("water") or obj.Name:lower():find("tsunami") or obj.Name:lower():find("wave")) then
             return obj.Position.Y
         end
     end
-    return 20  -- Default fallback
+    return 20
 end
 
 -- ==================================================
--- BRING SYSTEM (UNDERGROUND - JALUR TSUNAMI)
+-- FUNGSI TERBANG GRADUAL KE TARGET
+-- ==================================================
+local function flyToTarget(targetPos)
+    local player = game.Players.LocalPlayer
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+    
+    local hrp = player.Character.HumanoidRootPart
+    local currentPos = hrp.Position
+    local distance = (targetPos - currentPos).Magnitude
+    
+    -- Kalo udah deket, berhenti
+    if distance < getgenv().C.CollectDistance then
+        return true
+    end
+    
+    -- Hitung arah dan langkah gerak
+    local direction = (targetPos - currentPos).Unit
+    local moveVector = direction * math.min(getgenv().C.FlySpeed, distance)
+    
+    -- Pindahkan player gradual
+    hrp.CFrame = hrp.CFrame + moveVector
+    return false
+end
+
+-- ==================================================
+-- MAIN BRING LOOP (PLAYER TERBANG KE BRAINROT)
 -- ==================================================
 local function bringBrainrot()
     spawn(function()
-        while task.wait(getgenv().C.BringSpeed) do
+        while task.wait(0.1) do
             if getgenv().C.BringEnabled then
                 pcall(function()
                     local player = game.Players.LocalPlayer
                     if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
                     
-                    local hrp = player.Character.HumanoidRootPart
                     local tsunamiLevel = getTsunamiLevel()
                     local undergroundY = tsunamiLevel - getgenv().C.UndergroundDepth
                     
+                    -- Cari brainrot terdekat yang sesuai rarity
+                    local closestTarget = nil
+                    local closestDist = math.huge
+                    
                     for _, obj in pairs(workspace:GetDescendants()) do
-                        if obj:IsA("BasePart") and obj.Name then
+                        if obj:IsA("BasePart") and obj.Name and obj.Parent and not obj.Parent:IsA("Player") then
                             local n = obj.Name:lower()
-                            local shouldBring = false
+                            local isTarget = false
                             
-                            -- Cek semua rarity yang ada di game [citation:2][citation:8]
-                            if getgenv().C.Common and (n:find("common") or n:find("noobini") or n:find("lirili")) then shouldBring = true end
-                            if getgenv().C.Uncommon and (n:find("uncommon") or n:find("trippi") or n:find("pipi")) then shouldBring = true end
-                            if getgenv().C.Rare and (n:find("rare") or n:find("cappuccino") or n:find("bambini")) then shouldBring = true end
-                            if getgenv().C.Epic and (n:find("epic") or n:find("pandaccini") or n:find("sigma")) then shouldBring = true end
-                            if getgenv().C.Legendary and (n:find("legend") or n:find("gorillo") or n:find("tigrilini")) then shouldBring = true end
-                            if getgenv().C.Mythical and (n:find("mythical") or n:find("cocofanto") or n:find("giraffa")) then shouldBring = true end
-                            if getgenv().C.Cosmic and (n:find("cosmic") or n:find("la vacca") or n:find("grande")) then shouldBring = true end
-                            if getgenv().C.Secret and (n:find("secret") or n:find("matteo") or n:find("gattatino")) then shouldBring = true end
-                            if getgenv().C.Celestial and (n:find("celestial") or n:find("job job") or n:find("dug dug")) then shouldBring = true end
-                            if getgenv().C.Divine and (n:find("divine") or n:find("bulbito") or n:find("burgerini")) then shouldBring = true end
+                            -- Cek rarity
+                            if getgenv().C.Common and n:find("common") then isTarget = true end
+                            if getgenv().C.Uncommon and n:find("uncommon") then isTarget = true end
+                            if getgenv().C.Rare and n:find("rare") then isTarget = true end
+                            if getgenv().C.Epic and n:find("epic") then isTarget = true end
+                            if getgenv().C.Legendary and (n:find("legend") or n:find("leg")) then isTarget = true end
+                            if getgenv().C.Mythical and (n:find("mythical") or n:find("myth")) then isTarget = true end
+                            if getgenv().C.Cosmic and (n:find("cosmic") or n:find("cosmo")) then isTarget = true end
+                            if getgenv().C.Secret and (n:find("secret") or n:find("hidden")) then isTarget = true end
+                            if getgenv().C.Celestial and (n:find("celestial") or n:find("celest")) then isTarget = true end
+                            if getgenv().C.Divine and (n:find("divine") or n:find("div")) then isTarget = true end
                             
-                            if shouldBring then
-                                -- Bawa ke bawah jalur tsunami
-                                obj.CFrame = CFrame.new(hrp.Position.X, undergroundY, hrp.Position.Z)
-                                task.wait(0.05)
+                            if isTarget then
+                                local dist = (obj.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                                if dist < closestDist then
+                                    closestDist = dist
+                                    closestTarget = obj
+                                end
                             end
+                        end
+                    end
+                    
+                    -- Kalo ada target, terbang ke dia (di kedalaman tsunami)
+                    if closestTarget then
+                        local targetPos = Vector3.new(closestTarget.Position.X, undergroundY, closestTarget.Position.Z)
+                        local arrived = flyToTarget(targetPos)
+                        
+                        -- Kalo udah nyampe, collect otomatis (simulasi touch)
+                        if arrived then
+                            if closestTarget:FindFirstChild("TouchInterest") then
+                                local hrp = player.Character.HumanoidRootPart
+                                firetouchinterest(hrp, closestTarget, 0)
+                                task.wait(0.05)
+                                firetouchinterest(hrp, closestTarget, 1)
+                            end
+                            
+                            -- Notifikasi kecil
+                            Rayfield:Notify({
+                                Title = "Collected!",
+                                Content = closestTarget.Name,
+                                Duration = 1
+                            })
+                            
+                            task.wait(0.3)  -- Cooldown setelah collect
                         end
                     end
                 end)
@@ -116,12 +170,10 @@ end
 bringBrainrot()
 
 -- ==================================================
--- AUTO COLLECT MONEY DARI BASE (1x PER DETIK)
+-- AUTO COLLECT MONEY DARI BASE
 -- ==================================================
--- Berdasarkan mekanik game: Brainrot yang sudah di base ngasih passive income
--- dan tampil sebagai "money mat" (area segipanjang) yang bisa di-injek [citation:1][citation:2]
 spawn(function()
-    while task.wait(getgenv().C.CollectInterval) do
+    while task.wait(1) do
         if getgenv().C.AutoCollectMoney then
             pcall(function()
                 local player = game.Players.LocalPlayer
@@ -129,44 +181,17 @@ spawn(function()
                 
                 local hrp = player.Character.HumanoidRootPart
                 
-                -- Cari semua display uang di base (biasanya berupa part dengan nama "MoneyMat" atau "CollectArea")
                 for _, moneyObj in pairs(workspace:GetDescendants()) do
-                    -- Deteksi objek display uang (segipanjang) di setiap petak brainrot
                     if moneyObj:IsA("BasePart") and (moneyObj.Name:lower():find("money") or 
                                                      moneyObj.Name:lower():find("collect") or 
-                                                     moneyObj.Name:lower():find("mat") or
-                                                     moneyObj.Name:lower():find("display")) then
+                                                     moneyObj.Name:lower():find("mat")) then
                         
-                        -- Hitung jarak ke player
                         local dist = (moneyObj.Position - hrp.Position).Magnitude
-                        
-                        -- Kalo deket (dalam radius 20 stud), collect otomatis
                         if dist < 20 then
-                            -- Simulasi "touch" ke money mat untuk collect
                             if moneyObj:FindFirstChild("TouchInterest") then
                                 firetouchinterest(hrp, moneyObj, 0)
                                 task.wait(0.05)
                                 firetouchinterest(hrp, moneyObj, 1)
-                            end
-                            
-                            -- Alternatif: kalo pake ClickDetector
-                            if moneyObj:FindFirstChild("ClickDetector") then
-                                fireclickdetector(moneyObj.ClickDetector)
-                            end
-                        end
-                    end
-                    
-                    -- Deteksi juga part yang warnanya mencolok (biasanya display uang warna emas/kuning)
-                    if moneyObj:IsA("BasePart") and moneyObj.BrickColor then
-                        local color = moneyObj.BrickColor.Name:lower()
-                        if (color:find("gold") or color:find("yellow") or color:find("bright")) and moneyObj.Size.X > 5 then
-                            local dist = (moneyObj.Position - hrp.Position).Magnitude
-                            if dist < 20 then
-                                if moneyObj:FindFirstChild("TouchInterest") then
-                                    firetouchinterest(hrp, moneyObj, 0)
-                                    task.wait(0.05)
-                                    firetouchinterest(hrp, moneyObj, 1)
-                                end
                             end
                         end
                     end
@@ -177,7 +202,7 @@ spawn(function()
 end)
 
 -- ==================================================
--- REMOVE WALL / VIP (BENERAN ILANG)
+-- REMOVE WALL / VIP
 -- ==================================================
 spawn(function()
     while task.wait(1) do
@@ -204,12 +229,12 @@ spawn(function()
 end)
 
 -- ==================================================
--- CREATE WINDOW (RAYFIELD)
+-- CREATE WINDOW
 -- ==================================================
 local Window = Rayfield:CreateWindow({
-    Name = "🧠 BRAINROT HUB • UNDERGROUND",
+    Name = "🧠 BRAINROT HUB • PLAYER FLY",
     LoadingTitle = "BRAINROT HUB",
-    LoadingSubtitle = "Underground Bring + Auto Collect Money",
+    LoadingSubtitle = "Player terbang ke brainrot (underground)",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "BrainrotHub",
@@ -228,7 +253,7 @@ local Window = Rayfield:CreateWindow({
 -- ==================================================
 Rayfield:Notify({
     Title = "Brainrot Hub Loaded!",
-    Content = "Aktifkan Bring System & Auto Collect Money di MAIN tab",
+    Content = "Player terbang ke brainrot (bawah jalur tsunami)",
     Duration = 4
 })
 
@@ -255,20 +280,20 @@ HomeTab:CreateButton({
 })
 
 -- ==================================================
--- MAIN TAB (BRING SYSTEM + MONEY COLLECT)
+-- MAIN TAB
 -- ==================================================
 local MainTab = Window:CreateTab("📋 MAIN", 4483362458)
-local MainSection = MainTab:CreateSection("Underground Bring System")
+local MainSection = MainTab:CreateSection("Player Fly System")
 
 MainTab:CreateToggle({
-    Name = "🚇 AKTIFKAN BRING SYSTEM",
+    Name = "🚀 AKTIFKAN FLY TO BRAINROT",
     CurrentValue = false,
     Flag = "BringToggle",
     Callback = function(Value)
         getgenv().C.BringEnabled = Value
         Rayfield:Notify({
-            Title = Value and "Bring System ON" or "Bring System OFF",
-            Content = Value and "Brainrot dibawa lewat bawah jalur tsunami" or "Dinonaktifkan",
+            Title = Value and "Fly ON" or "Fly OFF",
+            Content = Value and "Player terbang ke brainrot (bawah jalur tsunami)" or "Dinonaktifkan",
             Duration = 2
         })
     end,
@@ -281,51 +306,41 @@ MainTab:CreateSlider({
     Suffix = "stud",
     CurrentValue = 8,
     Flag = "DepthSlider",
-    Callback = function(value)
-        getgenv().C.UndergroundDepth = value
-    end,
+    Callback = function(v) getgenv().C.UndergroundDepth = v end,
 })
 
 MainTab:CreateSlider({
-    Name = "⚡ Kecepatan Bring",
-    Range = {0.1, 0.8},
-    Increment = 0.05,
-    Suffix = "detik",
-    CurrentValue = 0.3,
+    Name = "⚡ Kecepatan Terbang",
+    Range = {10, 50},
+    Increment = 5,
+    Suffix = "stud/detik",
+    CurrentValue = 25,
     Flag = "SpeedSlider",
-    Callback = function(value)
-        getgenv().C.BringSpeed = value
-    end,
+    Callback = function(v) getgenv().C.FlySpeed = v end,
 })
 
--- ==================================================
--- AUTO COLLECT MONEY SECTION
--- ==================================================
-local MoneySection = MainTab:CreateSection("💰 Auto Collect Money (Base)")
+MainTab:CreateSlider({
+    Name = "📐 Jarak Collect",
+    Range = {3, 10},
+    Increment = 1,
+    Suffix = "stud",
+    CurrentValue = 5,
+    Flag = "CollectDist",
+    Callback = function(v) getgenv().C.CollectDistance = v end,
+})
 
+-- Money collect toggle
 MainTab:CreateToggle({
-    Name = "💵 AKTIFKAN AUTO COLLECT",
+    Name = "💰 Auto Collect Money (Base)",
     CurrentValue = false,
-    Flag = "MoneyCollectToggle",
-    Callback = function(Value)
-        getgenv().C.AutoCollectMoney = Value
-        Rayfield:Notify({
-            Title = Value and "Auto Collect ON" or "Auto Collect OFF",
-            Content = Value and "Ngumpulin duit dari display segipanjang tiap 1 detik" or "Dimatiin",
-            Duration = 2
-        })
-    end,
-})
-
-MainTab:CreateParagraph({
-    Title = "ℹ️ Cara Kerja",
-    Content = "• Setiap Brainrot di base punya display uang (segi panjang)\n• Auto collect 1x per detik\n• Tinggal jalan di dekat area base"
+    Flag = "MoneyToggle",
+    Callback = function(v) getgenv().C.AutoCollectMoney = v end
 })
 
 -- ==================================================
--- RARITY SWITCHES (LENGKAP 10 RARITY)
+-- RARITY SWITCHES
 -- ==================================================
-local RaritySection = MainTab:CreateSection("✨ RARITY SWITCHES (10 Rarity)")
+local RaritySection = MainTab:CreateSection("✨ RARITY SWITCHES")
 
 MainTab:CreateToggle({Name = "Common", CurrentValue = true, Flag = "Common", Callback = function(v) getgenv().C.Common = v end})
 MainTab:CreateToggle({Name = "Uncommon", CurrentValue = true, Flag = "Uncommon", Callback = function(v) getgenv().C.Uncommon = v end})
@@ -356,26 +371,9 @@ AutoTab:CreateToggle({Name = "☢️ Radioactive", CurrentValue = false, Flag = 
 local MiscTab = Window:CreateTab("🛠️ MISC", 4483362458)
 local MiscSection = MiscTab:CreateSection("World Bypass")
 
-MiscTab:CreateToggle({
-    Name = "🧱 Remove Walls",
-    CurrentValue = false,
-    Flag = "RemoveWall",
-    Callback = function(v) getgenv().C.Wall = v end
-})
-
-MiscTab:CreateToggle({
-    Name = "💎 Remove VIP Barriers",
-    CurrentValue = false,
-    Flag = "RemoveVIP",
-    Callback = function(v) getgenv().C.VIP = v end
-})
-
-MiscTab:CreateToggle({
-    Name = "🛡️ God Mode (2-3 wave)",
-    CurrentValue = false,
-    Flag = "GodMode",
-    Callback = function(v) getgenv().C.God = v end
-})
+MiscTab:CreateToggle({Name = "🧱 Remove Walls", CurrentValue = false, Flag = "RemoveWall", Callback = function(v) getgenv().C.Wall = v end})
+MiscTab:CreateToggle({Name = "💎 Remove VIP Barriers", CurrentValue = false, Flag = "RemoveVIP", Callback = function(v) getgenv().C.VIP = v end})
+MiscTab:CreateToggle({Name = "🛡️ God Mode (2-3 wave)", CurrentValue = false, Flag = "GodMode", Callback = function(v) getgenv().C.God = v end})
 
 -- ==================================================
 -- PERF TAB
@@ -383,12 +381,7 @@ MiscTab:CreateToggle({
 local PerfTab = Window:CreateTab("⚡ PERF", 4483362458)
 local PerfSection = PerfTab:CreateSection("Performance")
 
-PerfTab:CreateToggle({
-    Name = "Reduce Lag",
-    CurrentValue = false,
-    Flag = "ReduceLag",
-    Callback = function(v) getgenv().C.ReduceLag = v end
-})
+PerfTab:CreateToggle({Name = "Reduce Lag", CurrentValue = false, Flag = "ReduceLag", Callback = function(v) getgenv().C.ReduceLag = v end})
 
 -- ==================================================
 -- SERVER TAB
@@ -396,10 +389,7 @@ PerfTab:CreateToggle({
 local ServerTab = Window:CreateTab("🌐 SERVER", 4483362458)
 local ServerSection = ServerTab:CreateSection("Server Settings")
 
-ServerTab:CreateParagraph({
-    Title = "🛡️ Anti AFK",
-    Content = "Status: SELALU ON (otomatis)"
-})
+ServerTab:CreateParagraph({Title = "🛡️ Anti AFK", Content = "Status: SELALU ON (otomatis)"})
 
 -- ==================================================
 -- REDUCE LAG FUNCTION
@@ -425,5 +415,5 @@ end)
 -- ==================================================
 Rayfield:LoadConfiguration()
 
-print("✅ BRAINROT HUB - UNDERGROUND BRING + AUTO MONEY LOADED")
-print("💰 Auto collect money dari display segipanjang di base (1x/detik)")
+print("✅ BRAINROT HUB - PLAYER FLY TO BRAINROT LOADED")
+print("🚀 Player terbang gradual ke brainrot (bawah jalur tsunami)")
