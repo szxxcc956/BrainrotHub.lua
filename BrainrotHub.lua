@@ -1,252 +1,270 @@
 --[[
-    BRAINROT HUB - SMOOTH TWEEN FLY
-    - Terbang ke atas (200 stud)
-    - Ambil brainrot
-    - Balik ke base
-    - FLY MULUS pake TweenService (ga spam jump)
+    BRAINROT HUB - PROXIMITY TAKE SYSTEM
+    - Deteksi brainrot terdekat
+    - Muncul prompt "TAKE [nama] (E)" 
+    - Tekan E untuk ambil
+    - Bisa juga auto take (toggle)
 ]]
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 -- ==================================================
--- KONFIGURASI
+-- KONFIGURASI AREA (ISI KOORDINAT LO!)
 -- ==================================================
-getgenv().C = {
-    -- Bring system
-    BringEnabled = false,
-    FlyHeight = 200,          -- Terbang ke atas 200 stud
-    FlySpeed = 2,             -- Durasi tween (detik)
-    
-    -- Rarity switches
-    Common = true,
-    Uncommon = true,
-    Rare = true,
-    Epic = true,
-    Legendary = true,
-    Mythical = true,
-    Cosmic = true,
-    Secret = true,
-    Celestial = true,
-    Divine = true,
-    
-    -- Money collect
-    AutoCollectMoney = false,
-    
-    -- Other features
-    God = false,
-    Wall = false,
-    VIP = false,
-    ReduceLag = false,
-    
-    -- Events
-    Event = {m=false, a=false, c=false, u=false, r=false}
+local AreaData = {
+    ["Common"] = {
+        Position = Vector3.new(100, 20, 50),
+        GapPosition = Vector3.new(95, 5, 50),
+    },
+    ["Uncommon"] = { Position = Vector3.new(200, 20, 50), GapPosition = Vector3.new(195, 5, 55) },
+    ["Rare"] = { Position = Vector3.new(300, 20, 50), GapPosition = Vector3.new(295, 5, 45) },
+    ["Epic"] = { Position = Vector3.new(400, 20, 50), GapPosition = Vector3.new(405, 5, 50) },
+    ["Legendary"] = { Position = Vector3.new(500, 20, 50), GapPosition = Vector3.new(495, 5, 40) },
+    ["Mythical"] = { Position = Vector3.new(600, 20, 50), GapPosition = Vector3.new(605, 5, 60) },
+    ["Cosmic"] = { Position = Vector3.new(700, 20, 50), GapPosition = Vector3.new(695, 5, 50) },
+    ["Secret"] = { Position = Vector3.new(800, 20, 50), GapPosition = Vector3.new(805, 5, 45) },
+    ["Celestial"] = { Position = Vector3.new(900, 20, 50), GapPosition = Vector3.new(895, 5, 55) },
+    ["Divine"] = { Position = Vector3.new(1000, 20, 50), GapPosition = Vector3.new(1005, 5, 50) },
 }
 
 -- ==================================================
--- ANTI AFK
+-- KONFIGURASI SCRIPT
 -- ==================================================
-spawn(function() while wait(60) do 
-    pcall(function() 
-        local player = game.Players.LocalPlayer
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid:Move(Vector3.new(0,0,0), true)
-        end
-    end)
-end end)
+getgenv().C = {
+    -- Proximity system
+    ProximityDistance = 15,
+    AutoTake = false,
+    
+    -- Fly system
+    FlyEnabled = false,
+    TsunamiDepth = 8,
+    FlySpeed = 2,
+    TargetArea = "Celestial",
+    UseGap = true,
+    
+    -- Rarity toggles
+    Common = true, Uncommon = true, Rare = true, Epic = true,
+    Legendary = true, Mythical = true, Cosmic = true,
+    Secret = true, Celestial = true, Divine = true,
+    
+    -- Other
+    RemoveWalls = false,
+    RemoveVIP = false,
+    God = false,
+    ReduceLag = false,
+}
 
 -- ==================================================
--- FUNGSI FLY MULUS PAKE TWEEN
+-- VARIABEL PROXIMITY
 -- ==================================================
-local function smoothFly(targetPos, duration)
-    local player = game.Players.LocalPlayer
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+local nearestBrainrot = nil
+local promptGui = nil
+local player = game.Players.LocalPlayer
+
+-- ==================================================
+-- FUNGSI CEK RARITY
+-- ==================================================
+local function isTargetRarity(name)
+    local n = name:lower()
     
-    local hrp = player.Character.HumanoidRootPart
-    local startPos = hrp.Position
+    if getgenv().C.Common and (n:find("common") or n:find("noobini") or n:find("frulli") or n:find("pipi")) then return true end
+    if getgenv().C.Uncommon and (n:find("uncommon") or n:find("trippi") or n:find("bobrito") or n:find("avocado")) then return true end
+    if getgenv().C.Rare and (n:find("rare") or n:find("cappuccino") or n:find("bambini") or n:find("trulimero")) then return true end
+    if getgenv().C.Epic and (n:find("epic") or n:find("burbaloni") or n:find("sigma") or n:find("pandaccini")) then return true end
+    if getgenv().C.Legendary and (n:find("legend") or n:find("bombardilo") or n:find("gorillo") or n:find("tigrilini")) then return true end
+    if getgenv().C.Mythical and (n:find("mythical") or n:find("cocofanto") or n:find("tralalero") or n:find("giraffa")) then return true end
+    if getgenv().C.Cosmic and (n:find("cosmic") or n:find("vacca") or n:find("nuclearo") or n:find("pot")) then return true end
+    if getgenv().C.Secret and (n:find("secret") or n:find("matteo") or n:find("gattatino") or n:find("fragola")) then return true end
+    if getgenv().C.Celestial and (n:find("celestial") or n:find("job") or n:find("dug") or n:find("bisonte")) then return true end
+    if getgenv().C.Divine and (n:find("divine") or n:find("bulbito") or n:find("burgerini")) then return true end
     
-    -- Tween info (pake easing biar mulus)
-    local tweenInfo = TweenInfo.new(
-        duration,
-        Enum.EasingStyle.Quad,  -- Easing biar halus
-        Enum.EasingDirection.InOut,
-        0,
-        false,
-        0
-    )
-    
-    -- Buat tween
-    local tween = TweenService:Create(hrp, tweenInfo, {CFrame = CFrame.new(targetPos)})
-    tween:Play()
-    
-    -- Tunggu sampe selesai
-    tween.Completed:Wait()
+    return false
 end
 
 -- ==================================================
--- FUNGSI SAVE BASE POSITION
+-- FUNGSI MEMBUAT PROMPT (KAYAK DI SS)
 -- ==================================================
-local basePosition = nil
-
-local function saveBasePosition()
-    local player = game.Players.LocalPlayer
-    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        basePosition = player.Character.HumanoidRootPart.Position
-        Rayfield:Notify({
-            Title = "Base Position Saved",
-            Content = "Posisi base tersimpan",
-            Duration = 2
-        })
+local function createPrompt(obj)
+    -- Hapus prompt lama
+    if promptGui then
+        promptGui:Destroy()
+        promptGui = nil
     end
+    
+    -- Buat BillboardGui baru
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "BrainrotPrompt"
+    billboard.Size = UDim2.new(0, 200, 0, 60)
+    billboard.StudsOffset = Vector3.new(0, 4, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = obj
+    
+    -- Background
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    bg.BackgroundTransparency = 0.2
+    bg.BorderSizePixel = 0
+    bg.Parent = billboard
+    
+    -- Nama brainrot
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    nameLabel.Position = UDim2.new(0, 0, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = "📦 " .. obj.Name
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.Parent = bg
+    
+    -- Prompt "TAKE [E]"
+    local takeLabel = Instance.new("TextLabel")
+    takeLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    takeLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    takeLabel.BackgroundTransparency = 1
+    takeLabel.Text = "⚡ TAKE [E]"
+    takeLabel.TextColor3 = Color3.fromRGB(255, 215, 0)  -- Emas
+    takeLabel.TextScaled = true
+    takeLabel.Font = Enum.Font.GothamBold
+    takeLabel.Parent = bg
+    
+    promptGui = billboard
+    nearestBrainrot = obj
 end
 
 -- ==================================================
--- MAIN BRING LOOP
+-- FUNGSI AMBIL BRAINROT
 -- ==================================================
-local function bringBrainrot()
-    spawn(function()
-        while task.wait(0.5) do
-            if getgenv().C.BringEnabled then
-                pcall(function()
-                    local player = game.Players.LocalPlayer
-                    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-                    
-                    -- Kalo base position belum disimpan, save otomatis
-                    if not basePosition then
-                        basePosition = player.Character.HumanoidRootPart.Position
-                    end
-                    
-                    local hrp = player.Character.HumanoidRootPart
-                    
-                    -- Cari brainrot terdekat yang sesuai rarity
-                    local closestTarget = nil
-                    local closestDist = math.huge
-                    
-                    for _, obj in pairs(workspace:GetDescendants()) do
-                        if obj:IsA("BasePart") and obj.Name and obj.Parent and not obj.Parent:IsA("Player") then
-                            local n = obj.Name:lower()
-                            local isTarget = false
-                            
-                            -- Cek rarity
-                            if getgenv().C.Common and n:find("common") then isTarget = true end
-                            if getgenv().C.Uncommon and n:find("uncommon") then isTarget = true end
-                            if getgenv().C.Rare and n:find("rare") then isTarget = true end
-                            if getgenv().C.Epic and n:find("epic") then isTarget = true end
-                            if getgenv().C.Legendary and (n:find("legend") or n:find("leg")) then isTarget = true end
-                            if getgenv().C.Mythical and (n:find("mythical") or n:find("myth")) then isTarget = true end
-                            if getgenv().C.Cosmic and (n:find("cosmic") or n:find("cosmo")) then isTarget = true end
-                            if getgenv().C.Secret and (n:find("secret") or n:find("hidden")) then isTarget = true end
-                            if getgenv().C.Celestial and (n:find("celestial") or n:find("celest")) then isTarget = true end
-                            if getgenv().C.Divine and (n:find("divine") or n:find("div")) then isTarget = true end
-                            
-                            if isTarget then
-                                local dist = (obj.Position - player.Character.HumanoidRootPart.Position).Magnitude
-                                if dist < closestDist then
-                                    closestDist = dist
-                                    closestTarget = obj
-                                end
-                            end
-                        end
-                    end
-                    
-                    -- Kalo ada target
-                    if closestTarget then
-                        -- FASE 1: TERBANG KE ATAS (200 stud)
-                        local upPos = Vector3.new(hrp.Position.X, getgenv().C.FlyHeight, hrp.Position.Z)
-                        Rayfield:Notify({
-                            Title = "Flying Up",
-                            Content = "Naik ke ketinggian 200 stud",
-                            Duration = 1
-                        })
-                        smoothFly(upPos, getgenv().C.FlySpeed)
-                        
-                        -- FASE 2: TERBANG KE TARGET (di ketinggian yang sama)
-                        local targetPos = Vector3.new(closestTarget.Position.X, getgenv().C.FlyHeight, closestTarget.Position.Z)
-                        Rayfield:Notify({
-                            Title = "Flying to Brainrot",
-                            Content = closestTarget.Name,
-                            Duration = 1
-                        })
-                        smoothFly(targetPos, getgenv().C.FlySpeed)
-                        
-                        -- FASE 3: TURUN AMBIL BRAINROT
-                        local collectPos = Vector3.new(closestTarget.Position.X, closestTarget.Position.Y + 3, closestTarget.Position.Z)
-                        smoothFly(collectPos, 1)
-                        
-                        -- Collect brainrot (simulasi touch)
-                        if closestTarget:FindFirstChild("TouchInterest") then
-                            firetouchinterest(hrp, closestTarget, 0)
-                            task.wait(0.1)
-                            firetouchinterest(hrp, closestTarget, 1)
-                        end
-                        
-                        Rayfield:Notify({
-                            Title = "Collected!",
-                            Content = closestTarget.Name,
-                            Duration = 1
-                        })
-                        
-                        -- FASE 4: BALIK KE BASE (dengan ketinggian 200 stud dulu)
-                        if basePosition then
-                            -- Naik lagi ke 200 stud
-                            local upAgain = Vector3.new(basePosition.X, getgenv().C.FlyHeight, basePosition.Z)
-                            smoothFly(upAgain, getgenv().C.FlySpeed)
-                            
-                            -- Turun ke base
-                            smoothFly(basePosition, getgenv().C.FlySpeed)
-                            
-                            Rayfield:Notify({
-                                Title = "Back to Base",
-                                Content = "Kembali ke posisi awal",
-                                Duration = 1
-                            })
-                        end
-                        
-                        task.wait(0.5)  -- Cooldown
-                    end
-                end)
+local function takeBrainrot(obj)
+    if not obj then return end
+    
+    pcall(function()
+        -- Simulasi klik/take
+        if obj:FindFirstChild("ClickDetector") then
+            fireclickdetector(obj.ClickDetector)
+        elseif obj:FindFirstChild("TouchInterest") then
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = player.Character.HumanoidRootPart
+                firetouchinterest(hrp, obj, 0)
+                task.wait(0.1)
+                firetouchinterest(hrp, obj, 1)
             end
         end
+        
+        -- Notifikasi
+        Rayfield:Notify({
+            Title = "✅ Collected!",
+            Content = obj.Name,
+            Duration = 1.5
+        })
+        
+        -- Hapus prompt
+        if promptGui then
+            promptGui:Destroy()
+            promptGui = nil
+            nearestBrainrot = nil
+        end
     end)
 end
 
--- Jalankan bring system
-bringBrainrot()
-
 -- ==================================================
--- AUTO COLLECT MONEY
+-- LOOP DETEKSI BRAINROT TERDEKAT
 -- ==================================================
 spawn(function()
-    while task.wait(1) do
-        if getgenv().C.AutoCollectMoney then
-            pcall(function()
-                local player = game.Players.LocalPlayer
-                if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-                
-                local hrp = player.Character.HumanoidRootPart
-                
-                for _, moneyObj in pairs(workspace:GetDescendants()) do
-                    if moneyObj:IsA("BasePart") and (moneyObj.Name:lower():find("money") or 
-                                                     moneyObj.Name:lower():find("collect") or 
-                                                     moneyObj.Name:lower():find("mat")) then
-                        
-                        local dist = (moneyObj.Position - hrp.Position).Magnitude
-                        if dist < 20 then
-                            if moneyObj:FindFirstChild("TouchInterest") then
-                                firetouchinterest(hrp, moneyObj, 0)
-                                task.wait(0.05)
-                                firetouchinterest(hrp, moneyObj, 1)
-                            end
+    while task.wait(0.3) do
+        pcall(function()
+            if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+            
+            local hrp = player.Character.HumanoidRootPart
+            local closestDist = getgenv().C.ProximityDistance + 1
+            local closestObj = nil
+            
+            -- Cari brainrot terdekat
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and obj.Name and obj.Parent and not obj.Parent:IsA("Player") then
+                    if isTargetRarity(obj.Name) then
+                        local dist = (obj.Position - hrp.Position).Magnitude
+                        if dist < closestDist then
+                            closestDist = dist
+                            closestObj = obj
                         end
                     end
                 end
-            end)
-        end
+            end
+            
+            -- Update prompt
+            if closestObj and closestDist <= getgenv().C.ProximityDistance then
+                if closestObj ~= nearestBrainrot then
+                    createPrompt(closestObj)
+                end
+            else
+                if promptGui then
+                    promptGui:Destroy()
+                    promptGui = nil
+                    nearestBrainrot = nil
+                end
+            end
+            
+            -- Auto take kalo aktif
+            if getgenv().C.AutoTake and nearestBrainrot then
+                takeBrainrot(nearestBrainrot)
+                task.wait(0.5)
+            end
+        end)
     end
 end)
 
 -- ==================================================
--- REMOVE WALL / VIP
+-- DETEKSI TEKAN TOMBOL E
+-- ==================================================
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.E and nearestBrainrot then
+        takeBrainrot(nearestBrainrot)
+    end
+end)
+
+-- ==================================================
+-- FUNGSI TERBANG KE AREA (SINGKAT)
+-- ==================================================
+local function flyToArea(areaName)
+    local area = AreaData[areaName]
+    if not area or not player.Character then return end
+    
+    local tsunamiLevel = 20  -- Ganti pake deteksi tsunami kalo perlu
+    local startPos = player.Character.HumanoidRootPart.Position
+    local targetPos = getgenv().C.UseGap and area.GapPosition or area.Position
+    
+    -- Turun
+    local downPos = Vector3.new(startPos.X, tsunamiLevel - getgenv().C.TsunamiDepth, startPos.Z)
+    local t1 = TweenService:Create(player.Character.HumanoidRootPart, 
+        TweenInfo.new(getgenv().C.FlySpeed, Enum.EasingStyle.Quad), 
+        {CFrame = CFrame.new(downPos)})
+    t1:Play()
+    t1.Completed:Wait()
+    
+    -- Terbang horizontal
+    local midPos = Vector3.new(targetPos.X, tsunamiLevel - getgenv().C.TsunamiDepth, targetPos.Z)
+    local t2 = TweenService:Create(player.Character.HumanoidRootPart, 
+        TweenInfo.new(getgenv().C.FlySpeed * 1.5, Enum.EasingStyle.Quad), 
+        {CFrame = CFrame.new(midPos)})
+    t2:Play()
+    t2.Completed:Wait()
+    
+    -- Naik
+    local t3 = TweenService:Create(player.Character.HumanoidRootPart, 
+        TweenInfo.new(getgenv().C.FlySpeed, Enum.EasingStyle.Quad), 
+        {CFrame = CFrame.new(targetPos)})
+    t3:Play()
+    t3.Completed:Wait()
+end
+
+-- ==================================================
+-- REMOVE WALL FUNCTION
 -- ==================================================
 spawn(function()
     while task.wait(1) do
@@ -255,16 +273,19 @@ spawn(function()
                 if obj:IsA("BasePart") and obj.Name then
                     local n = obj.Name:lower()
                     
-                    if getgenv().C.Wall and (n:find("wall") or n:find("dinding") or n:find("tembok")) and not n:find("vip") then
+                    if getgenv().C.RemoveWalls and (
+                        n:find("wall") or n:find("dinding") or n:find("tembok") or 
+                        n:find("pagar") or n:find("fence") or n:find("barrier")
+                    ) and not n:find("vip") then
                         obj.CanCollide = false
                         obj.Transparency = 1
-                        obj.Material = Enum.Material.Air
                     end
                     
-                    if getgenv().C.VIP and (n:find("vip") or n:find("v.i.p") or n:find("barrier") or n:find("pagar")) then
+                    if getgenv().C.RemoveVIP and (
+                        n:find("vip") or n:find("v.i.p") or n:find("premium")
+                    ) then
                         obj.CanCollide = false
                         obj.Transparency = 1
-                        obj.Material = Enum.Material.Air
                     end
                 end
             end
@@ -276,29 +297,11 @@ end)
 -- CREATE WINDOW
 -- ==================================================
 local Window = Rayfield:CreateWindow({
-    Name = "🧠 BRAINROT HUB • SMOOTH FLY",
+    Name = "🧠 BRAINROT HUB • PROXIMITY TAKE",
     LoadingTitle = "BRAINROT HUB",
-    LoadingSubtitle = "Tween Fly (Ga Spam Jump)",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "BrainrotHub",
-        FileName = "Config"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = true
-    },
+    LoadingSubtitle = "Tekan E untuk ambil brainrot",
+    ConfigurationSaving = {Enabled = true, FolderName = "BrainrotHub", FileName = "Config"},
     KeySystem = false,
-})
-
--- ==================================================
--- NOTIFIKASI AWAL
--- ==================================================
-Rayfield:Notify({
-    Title = "Brainrot Hub Loaded!",
-    Content = "Smooth Tween Fly - Ga Spam Jump",
-    Duration = 4
 })
 
 -- ==================================================
@@ -315,141 +318,99 @@ HomeTab:CreateButton({
     end,
 })
 
-HomeTab:CreateButton({
-    Name = "▶️ SUBSCRIBE YOUTUBE",
-    Callback = function()
-        setclipboard("https://youtube.com/@brainrothub")
-        Rayfield:Notify({Title = "YouTube Link Copied!", Duration = 2})
-    end,
-})
-
 -- ==================================================
--- MAIN TAB
+-- MAIN TAB (PROXIMITY)
 -- ==================================================
 local MainTab = Window:CreateTab("📋 MAIN", 4483362458)
-local MainSection = MainTab:CreateSection("Smooth Fly System")
+local MainSection = MainTab:CreateSection("Proximity Take System")
 
-MainTab:CreateToggle({
-    Name = "🚀 AKTIFKAN FLY SYSTEM",
-    CurrentValue = false,
-    Flag = "BringToggle",
-    Callback = function(Value)
-        getgenv().C.BringEnabled = Value
-    end,
-})
-
-MainTab:CreateButton({
-    Name = "📍 SAVE BASE POSITION",
-    Callback = function()
-        saveBasePosition()
-    end,
+MainTab:CreateParagraph({
+    Title = "ℹ️ Cara Pakai",
+    Content = "1. Deketin brainrot (max 15 stud)\n2. Muncul prompt TAKE [E]\n3. Tekan E untuk ambil"
 })
 
 MainTab:CreateSlider({
-    Name = "📏 Ketinggian Fly",
-    Range = {100, 500},
-    Increment = 10,
+    Name = "📏 Jarak Deteksi",
+    Range = {5, 30},
+    Increment = 1,
     Suffix = "stud",
-    CurrentValue = 200,
-    Flag = "HeightSlider",
-    Callback = function(v) getgenv().C.FlyHeight = v end,
+    CurrentValue = 15,
+    Flag = "DistanceSlider",
+    Callback = function(v) getgenv().C.ProximityDistance = v end,
 })
 
-MainTab:CreateSlider({
-    Name = "⚡ Durasi Fly (detik)",
-    Range = {1, 5},
-    Increment = 0.5,
-    Suffix = "detik",
-    CurrentValue = 2,
-    Flag = "SpeedSlider",
-    Callback = function(v) getgenv().C.FlySpeed = v end,
-})
-
--- Money collect toggle
 MainTab:CreateToggle({
-    Name = "💰 Auto Collect Money (Base)",
+    Name = "🤖 Auto Take (otomatis ambil)",
     CurrentValue = false,
-    Flag = "MoneyToggle",
-    Callback = function(v) getgenv().C.AutoCollectMoney = v end
+    Flag = "AutoTake",
+    Callback = function(v) getgenv().C.AutoTake = v end,
 })
 
 -- ==================================================
--- RARITY SWITCHES
+-- AREA TAB
 -- ==================================================
-local RaritySection = MainTab:CreateSection("✨ RARITY SWITCHES")
+local AreaTab = Window:CreateTab("🗺️ AREA", 4483362458)
+local AreaSection = AreaTab:CreateSection("Fly ke Area")
 
-MainTab:CreateToggle({Name = "Common", CurrentValue = true, Flag = "Common", Callback = function(v) getgenv().C.Common = v end})
-MainTab:CreateToggle({Name = "Uncommon", CurrentValue = true, Flag = "Uncommon", Callback = function(v) getgenv().C.Uncommon = v end})
-MainTab:CreateToggle({Name = "Rare", CurrentValue = true, Flag = "Rare", Callback = function(v) getgenv().C.Rare = v end})
-MainTab:CreateToggle({Name = "Epic", CurrentValue = true, Flag = "Epic", Callback = function(v) getgenv().C.Epic = v end})
-MainTab:CreateToggle({Name = "Legendary", CurrentValue = true, Flag = "Legendary", Callback = function(v) getgenv().C.Legendary = v end})
-MainTab:CreateToggle({Name = "Mythical", CurrentValue = true, Flag = "Mythical", Callback = function(v) getgenv().C.Mythical = v end})
-MainTab:CreateToggle({Name = "Cosmic", CurrentValue = true, Flag = "Cosmic", Callback = function(v) getgenv().C.Cosmic = v end})
-MainTab:CreateToggle({Name = "Secret", CurrentValue = true, Flag = "Secret", Callback = function(v) getgenv().C.Secret = v end})
-MainTab:CreateToggle({Name = "Celestial", CurrentValue = true, Flag = "Celestial", Callback = function(v) getgenv().C.Celestial = v end})
-MainTab:CreateToggle({Name = "Divine", CurrentValue = true, Flag = "Divine", Callback = function(v) getgenv().C.Divine = v end})
+AreaTab:CreateDropdown({
+    Name = "Pilih Area",
+    Options = {"Common", "Uncommon", "Rare", "Epic", "Legendary", 
+               "Mythical", "Cosmic", "Secret", "Celestial", "Divine"},
+    CurrentOption = "Celestial",
+    Flag = "AreaDropdown",
+    Callback = function(opt) getgenv().C.TargetArea = opt end,
+})
 
--- ==================================================
--- AUTO TAB (EVENT TOKENS)
--- ==================================================
-local AutoTab = Window:CreateTab("🤖 AUTO", 4483362458)
-local AutoSection = AutoTab:CreateSection("Event Token Collector")
+AreaTab:CreateToggle({
+    Name = "🕳️ Land di GAP",
+    CurrentValue = true,
+    Flag = "GapToggle",
+    Callback = function(v) getgenv().C.UseGap = v end
+})
 
-AutoTab:CreateToggle({Name = "💰 Money Event", CurrentValue = false, Flag = "EventMoney", Callback = function(v) getgenv().C.Event.m = v end})
-AutoTab:CreateToggle({Name = "🎮 Arcade Event", CurrentValue = false, Flag = "EventArcade", Callback = function(v) getgenv().C.Event.a = v end})
-AutoTab:CreateToggle({Name = "🍬 Candy Event", CurrentValue = false, Flag = "EventCandy", Callback = function(v) getgenv().C.Event.c = v end})
-AutoTab:CreateToggle({Name = "👽 UFO Event", CurrentValue = false, Flag = "EventUFO", Callback = function(v) getgenv().C.Event.u = v end})
-AutoTab:CreateToggle({Name = "☢️ Radioactive", CurrentValue = false, Flag = "EventRadio", Callback = function(v) getgenv().C.Event.r = v end})
-
--- ==================================================
--- MISC TAB
--- ==================================================
-local MiscTab = Window:CreateTab("🛠️ MISC", 4483362458)
-local MiscSection = MiscTab:CreateSection("World Bypass")
-
-MiscTab:CreateToggle({Name = "🧱 Remove Walls", CurrentValue = false, Flag = "RemoveWall", Callback = function(v) getgenv().C.Wall = v end})
-MiscTab:CreateToggle({Name = "💎 Remove VIP Barriers", CurrentValue = false, Flag = "RemoveVIP", Callback = function(v) getgenv().C.VIP = v end})
-MiscTab:CreateToggle({Name = "🛡️ God Mode (2-3 wave)", CurrentValue = false, Flag = "GodMode", Callback = function(v) getgenv().C.God = v end})
-
--- ==================================================
--- PERF TAB
--- ==================================================
-local PerfTab = Window:CreateTab("⚡ PERF", 4483362458)
-local PerfSection = PerfTab:CreateSection("Performance")
-
-PerfTab:CreateToggle({Name = "Reduce Lag", CurrentValue = false, Flag = "ReduceLag", Callback = function(v) getgenv().C.ReduceLag = v end})
-
--- ==================================================
--- SERVER TAB
--- ==================================================
-local ServerTab = Window:CreateTab("🌐 SERVER", 4483362458)
-local ServerSection = ServerTab:CreateSection("Server Settings")
-
-ServerTab:CreateParagraph({Title = "🛡️ Anti AFK", Content = "Status: SELALU ON (otomatis)"})
-
--- ==================================================
--- REDUCE LAG FUNCTION
--- ==================================================
-spawn(function() 
-    while task.wait(3) do 
-        if getgenv().C.ReduceLag then 
-            pcall(function()
-                settings().Rendering.QualityLevel = 1
-                game:GetService("Lighting").GlobalShadows = false
-                for _, o in pairs(workspace:GetDescendants()) do
-                    if o:IsA("ParticleEmitter") or o:IsA("Smoke") or o:IsA("Fire") then 
-                        o.Enabled = false 
-                    end
-                end
-            end)
+AreaTab:CreateToggle({
+    Name = "🚀 FLY NOW",
+    CurrentValue = false,
+    Flag = "FlyToggle",
+    Callback = function(v)
+        if v then
+            flyToArea(getgenv().C.TargetArea)
+            task.wait(1)
+            getgenv().C.FlyEnabled = false
         end
-    end
-end)
+    end,
+})
+
+-- ==================================================
+-- RARITY TAB
+-- ==================================================
+local RarityTab = Window:CreateTab("✨ RARITY", 4483362458)
+local RaritySection = RarityTab:CreateSection("Filter Brainrot")
+
+RarityTab:CreateToggle({Name = "Common", CurrentValue = true, Flag = "Common", Callback = function(v) getgenv().C.Common = v end})
+RarityTab:CreateToggle({Name = "Uncommon", CurrentValue = true, Flag = "Uncommon", Callback = function(v) getgenv().C.Uncommon = v end})
+RarityTab:CreateToggle({Name = "Rare", CurrentValue = true, Flag = "Rare", Callback = function(v) getgenv().C.Rare = v end})
+RarityTab:CreateToggle({Name = "Epic", CurrentValue = true, Flag = "Epic", Callback = function(v) getgenv().C.Epic = v end})
+RarityTab:CreateToggle({Name = "Legendary", CurrentValue = true, Flag = "Legendary", Callback = function(v) getgenv().C.Legendary = v end})
+RarityTab:CreateToggle({Name = "Mythical", CurrentValue = true, Flag = "Mythical", Callback = function(v) getgenv().C.Mythical = v end})
+RarityTab:CreateToggle({Name = "Cosmic", CurrentValue = true, Flag = "Cosmic", Callback = function(v) getgenv().C.Cosmic = v end})
+RarityTab:CreateToggle({Name = "Secret", CurrentValue = true, Flag = "Secret", Callback = function(v) getgenv().C.Secret = v end})
+RarityTab:CreateToggle({Name = "Celestial", CurrentValue = true, Flag = "Celestial", Callback = function(v) getgenv().C.Celestial = v end})
+RarityTab:CreateToggle({Name = "Divine", CurrentValue = true, Flag = "Divine", Callback = function(v) getgenv().C.Divine = v end})
+
+-- ==================================================
+-- WALL TAB
+-- ==================================================
+local WallTab = Window:CreateTab("🧱 WALLS", 4483362458)
+local WallSection = WallTab:CreateSection("Remove Walls")
+
+WallTab:CreateToggle({Name = "Remove Walls", CurrentValue = false, Flag = "RemoveWalls", Callback = function(v) getgenv().C.RemoveWalls = v end})
+WallTab:CreateToggle({Name = "Remove VIP", CurrentValue = false, Flag = "RemoveVIP", Callback = function(v) getgenv().C.RemoveVIP = v end})
 
 -- ==================================================
 -- LOAD CONFIG
 -- ==================================================
 Rayfield:LoadConfiguration()
 
-print("✅ BRAINROT HUB - SMOOTH TWEEN FLY LOADED")
-print("🚀 Fly pake Tween (ga spam jump) - Naik 200 stud, ambil, balik base")
+print("✅ BRAINROT HUB - PROXIMITY TAKE LOADED")
+print("🎯 Tekan E untuk ambil brainrot terdekat")
