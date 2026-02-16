@@ -1,92 +1,370 @@
---[[ BRAINROT HUB by Xulur ]]
-local R=loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local T=game:GetService("TweenService")
-local P=game.Players.LocalPlayer
-local U=game:GetService("UserInputService")
-local ESP={}
+--[[ BRAINROT HUB by Xulur - LINORIA EDITION ]]
 
---== BRAINROT DATABASE (HEX) ==--
-local B={Cmn={"Noobini Cakenini","Lirili Larila","Tim Cheese","Frulli Frulla","Talpa Di Fero","Svinino Bombondino","Pipi Kiwi","Pipi Corni","Cmn LcKy"},Unc={"Trippi Troppi","Gangster Footera","Bobrito Bandito","Boneca Ambalabu","Cacto Hipopotamo","Ta Ta Ta Sahur","Tric Tric Baraboom","67","Pipi Avocado","Unc LcKy"},Rr={"Cappuccino Assassino","Brr Brr Patapim","Trulimero Trulicina","Bambini Crostini","Bananita Dolphinita","Perochello Lemonchello","Avocadini Guffo","Salamino Penguino","Penguino Cocosino","Ti Ti Ti Sahur","Rr LcKy"},Ep={"Burbaloni Luliloli","Chimpanzini Bananini","Ballerina Cappuccina","Chef Crabracadabra","Lionel Cactuseli","Glorbo Fruttodrillo","Strawberrelli Flamingelli","Pandaccini Bananini","Sigma Boy","Pi Pi Watermelon","Blueberrinni Octopussini","Cocosini Mama","Guesto Angelic","Ep LcKy"},Lg={"Frigo Camelo","Orangutini Ananasini","Rhino Toasterino","Bombardiro Crocodilo","Spioniro Golubiro","Bombombini Gusini","Zibra Zubra Zibralini","Tigrilini Watermelini","Cavallo Virtuoso","Gorillo Watermelondrillo","Avocadorilla","Ganganzelli Trulala","Eaglucci Cocosucci","Lg LcKy"},Myth={"Cocofanto Elefanto","Giraffa Celeste","Tralalero Tralala","Los Crocodillitos","Tigroligre Frutonni","Udin Din Din Dun","Trenostruzzo Turbo 3000","Trippi Troppi Troppa Trippa","Orcalero Orcala","Piccione Macchina","Tukanno Bananno","Ballerino Lololo","Myth LcKy","Alien LcKy"},Cos={"La Vacca Saturno","Torrtuginni Dragonfrutini","Los Tralaleritos","Las Tralaleritas","Las Vaquitas Saturnitas","Graipuss Medussi","Pot Hotspot","Chicleteira Bicicleteira","La Grande Combinasion","Nuclearo Dinossauro","Garama and Madundung","Dragon Cannelloni","Agarrini la Palini","Chimpanzini Spiderini","Dariungini Pandanneli","Vroosh Boosh","Cos LcKy"},Sec={"Matteo","Gattatino Neonino","Statutino Libertino","Unclito Samito","Gattatino Nyanino","Espresso Signora","Los Tungtungtungcitos","Aura Farma","Rainbow 67","Fragola La La La","Mastodontico Telepiedone","Capybara Monitora","Patatino Astronauta","Onionello Penguini","Patito Dinerito","Caffe Trinity","Eek Eek Eek Sahur","Los Combinasionas","Sec LcKy","Radioactive LcKy","UFO LcKy"},Cel={"Job Job Sahur","Dug Dug Dug","Bisonte Gupitere","Alessio","Esok Sekolah","Rattini Machini","Zung Zung Zung Lazur","Money Elephant","Capuccino Policia","Los Orcaleritos","Avocadini Antilopini","Diamantusa","La Malita","Cel LcKy","Admin LcKy"},Div={"Galactio Fantasma","Din Din Vaultero","Strawberry Elephant","Grappellino D'Oro","Martino Gravitino","Burgerini Bearini","Bulbito Bandito Traktorito","Div LcKy"},Inf={"Infinity LcKy","Infinity Brainrot"}}
+-- Load Linoria Library
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Linoria/LinoriaLib/main/Library.lua"))()
+local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Linoria/LinoriaLib/main/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/Linoria/LinoriaLib/main/SaveManager.lua"))()
+
+local T = game:GetService("TweenService")
+local P = game.Players.LocalPlayer
+local U = game:GetService("UserInputService")
+local ESP = {}
+
+--== BRAINROT DATABASE ==--
+local B = {
+    Common = {"Noobini Cakenini","Lirili Larila","Tim Cheese","Frulli Frulla","Talpa Di Fero","Svinino Bombondino","Pipi Kiwi","Pipi Corni","Common Lucky Block"},
+    Uncommon = {"Trippi Troppi","Gangster Footera","Bobrito Bandito","Boneca Ambalabu","Cacto Hipopotamo","Ta Ta Ta Sahur","Tric Tric Baraboom","67","Pipi Avocado","Uncommon Lucky Block"},
+    Rare = {"Cappuccino Assassino","Brr Brr Patapim","Trulimero Trulicina","Bambini Crostini","Bananita Dolphinita","Perochello Lemonchello","Avocadini Guffo","Salamino Penguino","Penguino Cocosino","Ti Ti Ti Sahur","Rare Lucky Block"},
+    Epic = {"Burbaloni Luliloli","Chimpanzini Bananini","Ballerina Cappuccina","Chef Crabracadabra","Lionel Cactuseli","Glorbo Fruttodrillo","Strawberrelli Flamingelli","Pandaccini Bananini","Sigma Boy","Pi Pi Watermelon","Blueberrinni Octopussini","Cocosini Mama","Guesto Angelic","Epic Lucky Block"},
+    Legendary = {"Frigo Camelo","Orangutini Ananasini","Rhino Toasterino","Bombardiro Crocodilo","Spioniro Golubiro","Bombombini Gusini","Zibra Zubra Zibralini","Tigrilini Watermelini","Cavallo Virtuoso","Gorillo Watermelondrillo","Avocadorilla","Ganganzelli Trulala","Eaglucci Cocosucci","Legendary Lucky Block"},
+    Mythical = {"Cocofanto Elefanto","Giraffa Celeste","Tralalero Tralala","Los Crocodillitos","Tigroligre Frutonni","Udin Din Din Dun","Trenostruzzo Turbo 3000","Trippi Troppi Troppa Trippa","Orcalero Orcala","Piccione Macchina","Tukanno Bananno","Ballerino Lololo","Mythical Lucky Block","Alien Lucky Block"},
+    Cosmic = {"La Vacca Saturno","Torrtuginni Dragonfrutini","Los Tralaleritos","Las Tralaleritas","Las Vaquitas Saturnitas","Graipuss Medussi","Pot Hotspot","Chicleteira Bicicleteira","La Grande Combinasion","Nuclearo Dinossauro","Garama and Madundung","Dragon Cannelloni","Agarrini la Palini","Chimpanzini Spiderini","Dariungini Pandanneli","Vroosh Boosh","Cosmic Lucky Block"},
+    Secret = {"Matteo","Gattatino Neonino","Statutino Libertino","Unclito Samito","Gattatino Nyanino","Espresso Signora","Los Tungtungtungcitos","Aura Farma","Rainbow 67","Fragola La La La","Mastodontico Telepiedone","Capybara Monitora","Patatino Astronauta","Onionello Penguini","Patito Dinerito","Caffe Trinity","Eek Eek Eek Sahur","Los Combinasionas","Secret Lucky Block","Radioactive Lucky Block","UFO Lucky Block"},
+    Celestial = {"Job Job Sahur","Dug Dug Dug","Bisonte Gupitere","Alessio","Esok Sekolah","Rattini Machini","Zung Zung Zung Lazur","Money Elephant","Capuccino Policia","Los Orcaleritos","Avocadini Antilopini","Diamantusa","La Malita","Celestial Lucky Block","Admin Lucky Block"},
+    Divine = {"Galactio Fantasma","Din Din Vaultero","Strawberry Elephant","Grappellino D'Oro","Martino Gravitino","Burgerini Bearini","Bulbito Bandito Traktorito","Divine Lucky Block"},
+    Infinity = {"Infinity Lucky Block","Infinity Brainrot"}
+}
 
 --== RARITY CHECK ==--
-local function G(n)local l=n:lower()for r,v in pairs(B)do for _,b in ipairs(v)do if l:find(b:lower())or b:lower():find(l)then return r end end end end
+local function getRarity(name)
+    local l = name:lower()
+    for rarity, list in pairs(B) do
+        for _, brainrotName in ipairs(list) do
+            if l:find(brainrotName:lower()) or brainrotName:lower():find(l) then
+                return rarity
+            end
+        end
+    end
+    return nil
+end
 
 --== ESP FUNCTION ==--
-local function E(o,r)if not o then return end
-local c={Cmn=Color3.fromRGB(128,128,128),Unc=Color3.fromRGB(0,255,0),Rr=Color3.fromRGB(0,0,255),Ep=Color3.fromRGB(128,0,128),Lg=Color3.fromRGB(255,165,0),Myth=Color3.fromRGB(255,192,203),Cos=Color3.fromRGB(0,255,255),Sec=Color3.fromRGB(255,0,255),Cel=Color3.fromRGB(255,215,0),Div=Color3.fromRGB(255,0,0),Inf=Color3.fromRGB(255,255,255)}
-local h=Instance.new("Highlight")h.FillColor=c[r]or Color3.new(1,1,1)h.OutlineColor=Color3.new(1,1,1)h.FillTransparency=0.5h.Parent=o
-local b=Instance.new("BillboardGui")b.Size=UDim2.new(0,200,0,50)b.StudsOffset=Vector3.new(0,3,0)b.AlwaysOnTop=true b.Parent=o
-local bg=Instance.new("Frame",b)bg.Size=UDim2.new(1,0,1,0)bg.BackgroundColor3=Color3.new(0,0,0)bg.BackgroundTransparency=0.3
-local t=Instance.new("TextLabel",bg)t.Size=UDim2.new(1,0,0.6,0)t.Text=o.Name t.TextColor3=c[r]or Color3.new(1,1,1)t.TextScaled=true t.Font=Enum.Font.GothamBold
-local rl=Instance.new("TextLabel",bg)rl.Size=UDim2.new(1,0,0.4,0)rl.Position=UDim2.new(0,0,0.6,0)rl.Text=r rl.TextColor3=Color3.new(1,1,1)rl.TextScaled=true rl.Font=Enum.Font.Gotham
-table.insert(ESP,{obj=o,hl=h,bb=b})end
+local function createESP(obj, rarity)
+    if not obj then return end
+    
+    local colors = {
+        Common = Color3.fromRGB(128,128,128),
+        Uncommon = Color3.fromRGB(0,255,0),
+        Rare = Color3.fromRGB(0,0,255),
+        Epic = Color3.fromRGB(128,0,128),
+        Legendary = Color3.fromRGB(255,165,0),
+        Mythical = Color3.fromRGB(255,192,203),
+        Cosmic = Color3.fromRGB(0,255,255),
+        Secret = Color3.fromRGB(255,0,255),
+        Celestial = Color3.fromRGB(255,215,0),
+        Divine = Color3.fromRGB(255,0,0),
+        Infinity = Color3.fromRGB(255,255,255)
+    }
+    
+    local highlight = Instance.new("Highlight")
+    highlight.FillColor = colors[rarity] or Color3.new(1,1,1)
+    highlight.OutlineColor = Color3.new(1,1,1)
+    highlight.FillTransparency = 0.5
+    highlight.Parent = obj
+    
+    local billboard = Instance.new("BillboardGui")
+    billboard.Size = UDim2.new(0,200,0,50)
+    billboard.StudsOffset = Vector3.new(0,3,0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = obj
+    
+    local bg = Instance.new("Frame", billboard)
+    bg.Size = UDim2.new(1,0,1,0)
+    bg.BackgroundColor3 = Color3.new(0,0,0)
+    bg.BackgroundTransparency = 0.3
+    
+    local nameLabel = Instance.new("TextLabel", bg)
+    nameLabel.Size = UDim2.new(1,0,0.6,0)
+    nameLabel.Text = obj.Name
+    nameLabel.TextColor3 = colors[rarity] or Color3.new(1,1,1)
+    nameLabel.TextScaled = true
+    nameLabel.Font = Enum.Font.GothamBold
+    
+    local rarityLabel = Instance.new("TextLabel", bg)
+    rarityLabel.Size = UDim2.new(1,0,0.4,0)
+    rarityLabel.Position = UDim2.new(0,0,0.6,0)
+    rarityLabel.Text = rarity
+    rarityLabel.TextColor3 = Color3.new(1,1,1)
+    rarityLabel.TextScaled = true
+    rarityLabel.Font = Enum.Font.Gotham
+    
+    table.insert(ESP, {obj = obj, hl = highlight, bb = billboard})
+end
 
-local function C()for _,e in ipairs(ESP)do pcall(function()e.hl:Destroy()e.bb:Destroy()end)end ESP={}end
+local function clearESP()
+    for _, e in ipairs(ESP) do
+        pcall(function()
+            e.hl:Destroy()
+            e.bb:Destroy()
+        end)
+    end
+    ESP = {}
+end
 
-local function U()if not Cfg.ESP then return end C()for _,o in pairs(workspace:GetDescendants())do if o:IsA("BasePart")and o.Name and o.Parent and not o.Parent:IsA("Player")then local r=G(o.Name)if r then E(o,r)end end end end
+local function updateESP()
+    if not _G.ESPEnabled then return end
+    clearESP()
+    for _, o in pairs(workspace:GetDescendants()) do
+        if o:IsA("BasePart") and o.Name and o.Parent and not o.Parent:IsA("Player") then
+            local r = getRarity(o.Name)
+            if r then createESP(o, r) end
+        end
+    end
+end
 
 --== CONFIG ==--
-Cfg={Farm=false,Fly=30,Under=0,Base=Vector3.new(0,5,50),Target="Cel",Cmn=false,Unc=false,Rr=false,Ep=false,Lg=false,Myth=false,Cos=false,Sec=false,Cel=true,Div=false,Inf=false,Wall=false,VIP=false,ESP=false}
+local Options = {
+    Farm = false,
+    FlySpeed = 30,
+    UnderDepth = 0,
+    BasePos = Vector3.new(0,5,50),
+    TargetRarity = "Celestial",
+    RemoveWalls = false,
+    RemoveVIP = false
+}
 
 --== ANTI AFK ==--
-spawn(function()while wait(60)do pcall(function()if P.Character and P.Character:FindFirstChild("Humanoid")then P.Character.Humanoid:Move(Vector3.new(0,0,0),true)end end)end end)
+spawn(function()
+    while wait(60) do
+        pcall(function()
+            if P.Character and P.Character:FindFirstChild("Humanoid") then
+                P.Character.Humanoid:Move(Vector3.new(0,0,0), true)
+            end
+        end)
+    end
+end)
 
---== FLY ==--
-local function F(p,d)if not P.Character or not P.Character:FindFirstChild("HumanoidRootPart")then return end
-local h=P.Character.HumanoidRootPart
-local tw=T:Create(h,TweenInfo.new(d,Enum.EasingStyle.Linear),{CFrame=CFrame.new(p)})tw:Play()tw.Completed:Wait()end
+--== FLY FUNCTION ==--
+local function flyTo(targetPos, duration)
+    if not P.Character or not P.Character:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = P.Character.HumanoidRootPart
+    local tween = T:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear), {CFrame = CFrame.new(targetPos)})
+    tween:Play()
+    tween.Completed:Wait()
+end
 
 --== FIND TARGET ==--
-local function FND()local t=Cfg.Target for _,o in pairs(workspace:GetDescendants())do if o:IsA("BasePart")and o.Name and o.Parent and not o.Parent:IsA("Player")then if G(o.Name)==t then return o end end end end
+local function findTarget()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Name and obj.Parent and not obj.Parent:IsA("Player") then
+            if getRarity(obj.Name) == Options.TargetRarity then
+                return obj
+            end
+        end
+    end
+    return nil
+end
 
---== TAKE ==--
-local function TAKE(o)if not o then return end if not P.Character then return end local h=P.Character.HumanoidRootPart
-if o:FindFirstChild("ClickDetector")then fireclickdetector(o.ClickDetector)
-elseif o:FindFirstChild("TouchInterest")then firetouchinterest(h,o,0)wait(0.05)firetouchinterest(h,o,1)
-else o.CFrame=h.CFrame*CFrame.new(0,-3,2)end
-R:Notify({Title="✅ Taken!",Content=o.Name,Duration=1.5})end
+--== TAKE OBJECT ==--
+local function takeObject(obj)
+    if not obj then return end
+    if not P.Character then return end
+    local hrp = P.Character.HumanoidRootPart
+    
+    if obj:FindFirstChild("ClickDetector") then
+        fireclickdetector(obj.ClickDetector)
+    elseif obj:FindFirstChild("TouchInterest") then
+        firetouchinterest(hrp, obj, 0)
+        wait(0.05)
+        firetouchinterest(hrp, obj, 1)
+    else
+        obj.CFrame = hrp.CFrame * CFrame.new(0,-3,2)
+    end
+end
 
 --== FARM LOOP ==--
-spawn(function()while wait(0.5)do if Cfg.Farm then pcall(function()if not P.Character then return end
-local h=P.Character.HumanoidRootPart local b=Cfg.Base local u=Cfg.Under local t=FND()
-if t then
-F(Vector3.new(h.Position.X,u,h.Position.Z),1)
-local tu=Vector3.new(t.Position.X,u,t.Position.Z)
-F(tu,(tu-Vector3.new(h.Position.X,u,h.Position.Z)).Magnitude/Cfg.Fly)
-F(t.Position,1)TAKE(t)wait(0.5)
-F(Vector3.new(t.Position.X,u,t.Position.Z),1)
-local bu=Vector3.new(b.X,u,b.Z)F(bu,(bu-Vector3.new(t.Position.X,u,t.Position.Z)).Magnitude/Cfg.Fly)F(b,1)
-else R:Notify({Title="⚠️ Kosong",Content=Cfg.Target,Duration=2})wait(3)end end)end end end)
+spawn(function()
+    while wait(0.5) do
+        if Options.Farm then
+            pcall(function()
+                if not P.Character then return end
+                local hrp = P.Character.HumanoidRootPart
+                local target = findTarget()
+                
+                if target then
+                    -- Turun
+                    flyTo(Vector3.new(hrp.Position.X, Options.UnderDepth, hrp.Position.Z), 1)
+                    
+                    -- Terbang ke target
+                    local targetUnder = Vector3.new(target.Position.X, Options.UnderDepth, target.Position.Z)
+                    local dist = (targetUnder - Vector3.new(hrp.Position.X, Options.UnderDepth, hrp.Position.Z)).Magnitude
+                    flyTo(targetUnder, dist / Options.FlySpeed)
+                    
+                    -- Naik ke target
+                    flyTo(target.Position, 1)
+                    
+                    -- Ambil
+                    takeObject(target)
+                    wait(0.5)
+                    
+                    -- Turun
+                    flyTo(Vector3.new(target.Position.X, Options.UnderDepth, target.Position.Z), 1)
+                    
+                    -- Kembali ke base
+                    local baseUnder = Vector3.new(Options.BasePos.X, Options.UnderDepth, Options.BasePos.Z)
+                    local returnDist = (baseUnder - Vector3.new(target.Position.X, Options.UnderDepth, target.Position.Z)).Magnitude
+                    flyTo(baseUnder, returnDist / Options.FlySpeed)
+                    
+                    -- Naik ke base
+                    flyTo(Options.BasePos, 1)
+                end
+            end)
+        end
+    end
+end)
 
 --== REMOVE WALL ==--
-spawn(function()while wait(1)do pcall(function()for _,o in pairs(workspace:GetDescendants())do if o:IsA("BasePart")and o.Name then local n=o.Name:lower()
-if Cfg.Wall and(n:find("wall")or n:find("dinding")or n:find("tembok")or n:find("pagar")or n:find("fence"))and not n:find("vip")then o.CanCollide=false o.Transparency=1 end
-if Cfg.VIP and(n:find("vip")or n:find("v.i.p"))then o.CanCollide=false o.Transparency=1 end end end end)end end)
+spawn(function()
+    while wait(1) do
+        pcall(function()
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and obj.Name then
+                    local n = obj.Name:lower()
+                    
+                    if Options.RemoveWalls and (n:find("wall") or n:find("dinding") or n:find("tembok") or n:find("pagar") or n:find("fence")) and not n:find("vip") then
+                        obj.CanCollide = false
+                        obj.Transparency = 1
+                    end
+                    
+                    if Options.RemoveVIP and (n:find("vip") or n:find("v.i.p")) then
+                        obj.CanCollide = false
+                        obj.Transparency = 1
+                    end
+                end
+            end
+        end)
+    end
+end)
 
 --== ESP LOOP ==--
-spawn(function()while wait(2)do if Cfg.ESP then pcall(U)end end end)
+spawn(function()
+    while wait(2) do
+        if _G.ESPEnabled then
+            pcall(updateESP)
+        end
+    end
+end)
 
---== UI ==--
-local W=R:CreateWindow({Name="🧠 BRAINROT HUB • Xulur",LoadingTitle="BRAINROT",LoadingSubtitle="Auto Farm + ESP",ConfigurationSaving={Enabled=true,FolderName="BrainrotHub",FileName="Config"},KeySystem=false})
-local H=W:CreateTab("🏠 HOME")local HS=H:CreateSection("Xulur")
-H:CreateButton({Name="📱 DISCORD",Callback=function()setclipboard("discord.gg/brainrothub")R:Notify({Title="Copied!",Duration=1})end})
+--== LINORIA WINDOW ==--
+local Window = Library:CreateWindow({
+    Title = "🧠 Brainrot Hub • Xulur",
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.2
+})
 
-local M=W:CreateTab("📋 MAIN")local MS=M:CreateSection("Auto Farm")
-M:CreateToggle({Name="🚀 AUTO FARM",CurrentValue=false,Flag="Farm",Callback=function(v)Cfg.Farm=v end})
-M:CreateDropdown({Name="🎯 TARGET",Options={"Cmn","Unc","Rr","Ep","Lg","Myth","Cos","Sec","Cel","Div","Inf"},CurrentOption="Cel",Flag="Rarity",Callback=function(o)Cfg.Target=o
-Cfg.Cmn=(o=="Cmn")Cfg.Unc=(o=="Unc")Cfg.Rr=(o=="Rr")Cfg.Ep=(o=="Ep")Cfg.Lg=(o=="Lg")Cfg.Myth=(o=="Myth")Cfg.Cos=(o=="Cos")Cfg.Sec=(o=="Sec")Cfg.Cel=(o=="Cel")Cfg.Div=(o=="Div")Cfg.Inf=(o=="Inf")end})
-M:CreateSlider({Name="⚡ SPEED",Range={10,50},Increment=5,CurrentValue=30,Flag="Speed",Callback=function(v)Cfg.Fly=v end})
-M:CreateInput({Name="📍 BASE (X,Y,Z)",CurrentValue="0,5,50",Flag="Base",Callback=function(v)local x,y,z=v:match("([%d.-]+),?%s*([%d.-]+),?%s*([%d.-]+)")if x and y and z then Cfg.Base=Vector3.new(x+0,y+0,z+0)end end})
+--== HOME TAB ==--
+local HomeTab = Window:AddTab("🏠 Home")
+local HomeGroup = HomeTab:AddLeftGroupbox("Info")
 
-local X=W:CreateTab("🛠️ MISC")local XS=X:CreateSection("ESP & Tools")
-X:CreateToggle({Name="👁️ ESP",CurrentValue=false,Flag="ESP",Callback=function(v)Cfg.ESP=v if v then U()else C()end end})
-X:CreateParagraph({Title="🎨 WARNA ESP",Content="Cmn:Abu|Unc:Hijau|Rr:Biru|Ep:Ungu|Lg:Orange|Myth:Pink|Cos:Cyan|Sec:Magenta|Cel:Emas|Div:Merah|Inf:Putih"})
+HomeGroup:AddButton({
+    Text = "📱 Discord",
+    Func = function()
+        setclipboard("discord.gg/brainrothub")
+        Library:Notify("Discord link copied!")
+    end
+})
 
-local WALL=W:CreateTab("🧱 WALLS")local WS=WALL:CreateSection("Remove")
-WALL:CreateToggle({Name="🧱 WALLS",CurrentValue=false,Flag="Wall",Callback=function(v)Cfg.Wall=v end})
-WALL:CreateToggle({Name="💎 VIP",CurrentValue=false,Flag="VIP",Callback=function(v)Cfg.VIP=v end})
+--== MAIN TAB ==--
+local MainTab = Window:AddTab("📋 Main")
+local FarmGroup = MainTab:AddLeftGroupbox("Auto Farm")
 
-local I=W:CreateTab("📊 INFO")local IS=I:CreateSection("Lucky Info")
-I:CreateParagraph({Title="🎲 LUCKY BLOX",Content="Infinity: Admin Abuse\nCelestial: Wacky Waves\nDivine: Wacky/Admin\nRadioactive/UFO/Alien: Event"})
+FarmGroup:AddToggle("FarmToggle", {
+    Text = "🚀 Auto Farm",
+    Default = false,
+    Callback = function(v) Options.Farm = v end
+})
 
-R:LoadConfiguration()print("✅ BRAINROT HUB by Xulur - LOADED")
+FarmGroup:AddDropdown("RarityDropdown", {
+    Text = "🎯 Target Rarity",
+    Values = {"Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythical", "Cosmic", "Secret", "Celestial", "Divine", "Infinity"},
+    Default = 9, -- Celestial
+    Callback = function(v) Options.TargetRarity = v end
+})
+
+FarmGroup:AddSlider("SpeedSlider", {
+    Text = "⚡ Fly Speed",
+    Default = 30,
+    Min = 10,
+    Max = 50,
+    Rounding = 1,
+    Callback = function(v) Options.FlySpeed = v end
+})
+
+FarmGroup:AddSlider("DepthSlider", {
+    Text = "📏 Underground Depth",
+    Default = 0,
+    Min = 0,
+    Max = 20,
+    Rounding = 1,
+    Callback = function(v) Options.UnderDepth = v end
+})
+
+--== ESP TAB ==--
+local ESPTab = Window:AddTab("👁️ ESP")
+local ESPGroup = ESPTab:AddLeftGroupbox("ESP Settings")
+
+ESPGroup:AddToggle("ESPToggle", {
+    Text = "Enable ESP",
+    Default = false,
+    Callback = function(v)
+        _G.ESPEnabled = v
+        if v then updateESP() else clearESP() end
+    end
+})
+
+--== WALL TAB ==--
+local WallTab = Window:AddTab("🧱 Walls")
+local WallGroup = WallTab:AddLeftGroupbox("Remove Obstacles")
+
+WallGroup:AddToggle("WallToggle", {
+    Text = "Remove Walls",
+    Default = false,
+    Callback = function(v) Options.RemoveWalls = v end
+})
+
+WallGroup:AddToggle("VIPToggle", {
+    Text = "Remove VIP Barriers",
+    Default = false,
+    Callback = function(v) Options.RemoveVIP = v end
+})
+
+--== INFO TAB ==--
+local InfoTab = Window:AddTab("📊 Info")
+local InfoGroup = InfoTab:AddLeftGroupbox("Lucky Blox Info")
+
+InfoGroup:AddLabel("🎲 Lucky Blox Types:")
+InfoGroup:AddLabel("• Common s/d Legendary: Drop biasa")
+InfoGroup:AddLabel("• Mythical: Drop Mythical")
+InfoGroup:AddLabel("• Cosmic: Drop Cosmic")
+InfoGroup:AddLabel("• Secret: Drop Secret")
+InfoGroup:AddLabel("• Celestial: Wacky Waves")
+InfoGroup:AddLabel("• Divine: Admin Abuse")
+InfoGroup:AddLabel("• Infinity: Admin Abuse (langka)")
+InfoGroup:AddLabel("• Radioactive/UFO: Event")
+
+--== SETTINGS TAB (OTOMATIS DARI LINORIA) ==--
+local SettingsTab = Window:AddTab("⚙️ Settings")
+local MenuGroup = SettingsTab:AddLeftGroupbox("Menu Settings")
+
+MenuGroup:AddButton({
+    Text = "Toggle UI",
+    Func = function() Library:ToggleUI() end
+})
+
+Library:SetWatermark("🧠 Brainrot Hub • Xulur")
+
+-- Load managers
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetFolder("BrainrotHub")
+ThemeManager:SetFolder("BrainrotHub")
+
+SaveManager:BuildConfigSection(SettingsTab:AddLeftGroupbox("Configuration"))
+ThemeManager:ApplyToGroupbox(MenuGroup)
+
+-- Finish
+Library:Notify("✅ Brainrot Hub Loaded!")
+print("✅ BRAINROT HUB - LINORIA EDITION LOADED")
