@@ -1,19 +1,19 @@
 --[[
-    BRAINROT HUB - CENTER EDITION
-    Posisi: Tengah layar
-    Tombol: Minimize (-) dan Close (X)
-    Minimize: Muncul tombol kecil di kanan bawah
+    BRAINROT HUB - BLUE GRADIENT EDITION
+    Warna biru gradasi item, tombol - dan x abu-abu
+    Tanpa shadow, tampilan clean
 ]]
 
 local player = game:GetService("Players").LocalPlayer
 local gui = Instance.new("ScreenGui")
 gui.Name = "BrainrotHub"
-gui.Parent = player:FindFirstChild("PlayerGui") or game:GetService("CoreGui")
+gui.Parent = game:GetService("CoreGui")  -- PAKAI CoreGui biar di atas
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.DisplayOrder = 999
 
 -- ==================================================
--- KONFIGURASI (SINGKAT)
+-- KONFIGURASI
 -- ==================================================
 getgenv().C = {
     Bring = false, Money = false, God = false, Wall = false, VIP = false, ReduceLag = false,
@@ -94,31 +94,21 @@ spawn(function() while wait(2) do pcall(function()
 end) end end)
 
 -- ==================================================
--- UI UTAMA (TENGAH)
+-- UI UTAMA - BIRU GRADASI
 -- ==================================================
 local main = Instance.new("Frame", gui)
 main.Size = UDim2.new(0, 600, 0, 450)
 main.Position = UDim2.new(0.5, -300, 0.5, -225)
-main.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
-main.BackgroundTransparency = 0.1
+main.BackgroundColor3 = Color3.fromRGB(8, 12, 20)  -- Biru gelap
 main.BorderSizePixel = 0
 main.Active = true
 main.Draggable = true
-main.Visible = true  -- Awalnya visible
+main.Visible = true
 
--- Shadow
-local shadow = Instance.new("Frame", main)
-shadow.Size = UDim2.new(1, 15, 1, 15)
-shadow.Position = UDim2.new(0, -8, 0, -8)
-shadow.BackgroundColor3 = Color3.new(0,0,0)
-shadow.BackgroundTransparency = 0.6
-shadow.BorderSizePixel = 0
-shadow.ZIndex = -1
-
--- Header
+-- Header dengan gradasi biru
 local header = Instance.new("Frame", main)
 header.Size = UDim2.new(1, 0, 0, 45)
-header.BackgroundColor3 = Color3.fromRGB(18, 18, 25)
+header.BackgroundColor3 = Color3.fromRGB(18, 30, 50)  -- Biru lebih terang
 header.BorderSizePixel = 0
 
 local title = Instance.new("TextLabel", header)
@@ -126,92 +116,76 @@ title.Size = UDim2.new(1, -80, 1, 0)
 title.Position = UDim2.new(0, 15, 0, 0)
 title.BackgroundTransparency = 1
 title.Text = "🧠 BRAINROT HUB"
-title.TextColor3 = Color3.fromRGB(100, 200, 255)
+title.TextColor3 = Color3.fromRGB(120, 200, 255)  -- Biru terang
 title.TextXAlignment = "Left"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 
 -- ==================================================
--- TOMBOL MINIMIZE & CLOSE
+-- TOMBOL - dan X (ABU-ABU)
 -- ==================================================
 local minimize = Instance.new("TextButton", header)
 minimize.Size = UDim2.new(0, 30, 0, 30)
 minimize.Position = UDim2.new(1, -70, 0, 7)
-minimize.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+minimize.BackgroundColor3 = Color3.fromRGB(60, 60, 70)  -- Abu-abu gelap
 minimize.BorderSizePixel = 0
 minimize.Text = "-"
-minimize.TextColor3 = Color3.white
+minimize.TextColor3 = Color3.fromRGB(220, 220, 220)  -- Abu-abu terang
 minimize.TextScaled = true
 minimize.Font = Enum.Font.GothamBold
-minimize.BackgroundTransparency = 0.3
 
 local close = Instance.new("TextButton", header)
 close.Size = UDim2.new(0, 30, 0, 30)
 close.Position = UDim2.new(1, -35, 0, 7)
-close.BackgroundColor3 = Color3.fromRGB(210, 60, 60)
+close.BackgroundColor3 = Color3.fromRGB(80, 80, 90)  -- Abu-abu lebih terang
 close.BorderSizePixel = 0
 close.Text = "✕"
-close.TextColor3 = Color3.white
+close.TextColor3 = Color3.fromRGB(255, 255, 255)
 close.TextScaled = true
 close.Font = Enum.Font.GothamBold
 
 -- ==================================================
--- TOMBOL MINIMIZED (MUNCUL KALO DI-MINIMIZE)
+-- TOMBOL MINIMIZE (MUNCUL PAS DI-MINIMIZE)
 -- ==================================================
 local miniBtn = Instance.new("TextButton", gui)
 miniBtn.Size = UDim2.new(0, 50, 0, 50)
-miniBtn.Position = UDim2.new(1, -60, 1, -60)  -- Kanan bawah
-miniBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+miniBtn.Position = UDim2.new(1, -60, 1, -60)
+miniBtn.BackgroundColor3 = Color3.fromRGB(40, 80, 140)  -- Biru gelap
 miniBtn.BorderSizePixel = 0
 miniBtn.Text = "🧠"
-miniBtn.TextColor3 = Color3.white
+miniBtn.TextColor3 = Color3.fromRGB(200, 220, 255)
 miniBtn.TextScaled = true
 miniBtn.Font = Enum.Font.GothamBold
-miniBtn.BackgroundTransparency = 0.2
-miniBtn.Visible = false  -- Awalnya sembunyi
+miniBtn.BackgroundTransparency = 0.1
+miniBtn.Visible = false
 
 -- Hover effect
-miniBtn.MouseEnter:Connect(function()
-    miniBtn.BackgroundColor3 = Color3.fromRGB(150, 150, 255)
-end)
-miniBtn.MouseLeave:Connect(function()
-    miniBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
-end)
+miniBtn.MouseEnter:Connect(function() miniBtn.BackgroundColor3 = Color3.fromRGB(60, 120, 200) end)
+miniBtn.MouseLeave:Connect(function() miniBtn.BackgroundColor3 = Color3.fromRGB(40, 80, 140) end)
 
--- ==================================================
--- FUNGSI MINIMIZE
--- ==================================================
+-- Fungsi minimize
 local minimized = false
-local originalContent = {}
-
 minimize.MouseButton1Click:Connect(function()
-    if not minimized then
-        -- Minimize: sembunyiin main, munculin miniBtn
-        main.Visible = false
-        miniBtn.Visible = true
-        minimized = true
-    end
+    main.Visible = false
+    miniBtn.Visible = true
+    minimized = true
 end)
 
--- Klik tombol mini buat munculin lagi
 miniBtn.MouseButton1Click:Connect(function()
     main.Visible = true
     miniBtn.Visible = false
     minimized = false
 end)
 
--- Close button
-close.MouseButton1Click:Connect(function()
-    gui:Destroy()
-end)
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
 
 -- ==================================================
--- MENU BAR (SINGKAT)
+-- MENU BAR
 -- ==================================================
 local mb = Instance.new("Frame", main)
 mb.Size = UDim2.new(1, 0, 0, 40)
 mb.Position = UDim2.new(0, 0, 0, 45)
-mb.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+mb.BackgroundColor3 = Color3.fromRGB(20, 30, 45)  -- Biru gelap
 mb.BorderSizePixel = 0
 
 local menus = {"🏠 HOME", "📋 MAIN", "🤖 AUTO", "⚡ PERF", "🛠️ MISC", "🌐 SERVER"}
@@ -222,8 +196,8 @@ for i = 1, 6 do
     btn.Size = UDim2.new(0, 100, 1, 0)
     btn.Position = UDim2.new(0, 5 + (i-1)*100, 0, 0)
     btn.Text = menus[i]
-    btn.TextColor3 = Color3.fromRGB(220,220,220)
-    btn.BackgroundColor3 = i == 1 and Color3.fromRGB(50,50,70) or Color3.fromRGB(30,30,40)
+    btn.TextColor3 = Color3.fromRGB(200, 220, 255)
+    btn.BackgroundColor3 = i == 1 and Color3.fromRGB(30, 50, 80) or Color3.fromRGB(20, 35, 55)
     btn.BorderSizePixel = 0
     
     local cont = Instance.new("ScrollingFrame", main)
@@ -233,34 +207,35 @@ for i = 1, 6 do
     cont.Visible = i == 1
     cont.CanvasSize = UDim2.new(0,0,0,380)
     cont.ScrollBarThickness = 4
-    cont.ScrollBarImageColor3 = Color3.fromRGB(100,180,255)
+    cont.ScrollBarImageColor3 = Color3.fromRGB(80, 160, 255)  -- Biru scroll
+    cont.BorderSizePixel = 0
     contents[i] = cont
     
     btn.MouseButton1Click:Connect(function()
         for j = 1, 6 do contents[j].Visible = false end
         for _, b in pairs(mb:GetChildren()) do 
-            if b:IsA("TextButton") then b.BackgroundColor3 = Color3.fromRGB(30,30,40) end
+            if b:IsA("TextButton") then b.BackgroundColor3 = Color3.fromRGB(20, 35, 55) end
         end
         cont.Visible = true
-        btn.BackgroundColor3 = Color3.fromRGB(50,50,70)
+        btn.BackgroundColor3 = Color3.fromRGB(30, 50, 80)
     end)
 end
 
 -- ==================================================
--- FUNGSI TOGGLE
+-- FUNGSI TOGGLE (BIRU)
 -- ==================================================
 local function toggle(parent, text, y, def, cb)
     local bg = Instance.new("Frame", parent)
     bg.Size = UDim2.new(1, -20, 0, 40)
     bg.Position = UDim2.new(0, 10, 0, y)
-    bg.BackgroundColor3 = Color3.fromRGB(25,25,35)
+    bg.BackgroundColor3 = Color3.fromRGB(18, 28, 42)  -- Biru gelap
     bg.BorderSizePixel = 0
     
     local l = Instance.new("TextLabel", bg)
     l.Size = UDim2.new(0, 160, 1, 0)
     l.Position = UDim2.new(0, 10, 0, 0)
     l.Text = text
-    l.TextColor3 = Color3.white
+    l.TextColor3 = Color3.fromRGB(220, 235, 255)
     l.TextXAlignment = "Left"
     l.BackgroundTransparency = 1
     l.Font = Enum.Font.Gotham
@@ -269,7 +244,7 @@ local function toggle(parent, text, y, def, cb)
     local btn = Instance.new("TextButton", bg)
     btn.Size = UDim2.new(0, 55, 0, 26)
     btn.Position = UDim2.new(1, -65, 0.5, -13)
-    btn.BackgroundColor3 = def and Color3.fromRGB(0,170,0) or Color3.fromRGB(75,75,85)
+    btn.BackgroundColor3 = def and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(60, 70, 90)  -- Biru ON, Abu OFF
     btn.Text = def and "ON" or "OFF"
     btn.TextColor3 = Color3.white
     btn.BorderSizePixel = 0
@@ -277,7 +252,7 @@ local function toggle(parent, text, y, def, cb)
     local state = def
     btn.MouseButton1Click:Connect(function()
         state = not state
-        btn.BackgroundColor3 = state and Color3.fromRGB(0,170,0) or Color3.fromRGB(75,75,85)
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(60, 70, 90)
         btn.Text = state and "ON" or "OFF"
         cb(state)
     end)
@@ -291,7 +266,7 @@ local y = 10
 local d = Instance.new("TextButton", contents[1])
 d.Size = UDim2.new(1, -20, 0, 45)
 d.Position = UDim2.new(0, 10, 0, y)
-d.BackgroundColor3 = Color3.fromRGB(88,101,242)
+d.BackgroundColor3 = Color3.fromRGB(50, 80, 140)  -- Biru discord
 d.Text = "📱 JOIN DISCORD"
 d.TextColor3 = Color3.white
 d.Font = Enum.Font.GothamBold
@@ -301,7 +276,7 @@ d.MouseButton1Click:Connect(function() setclipboard("https://discord.gg/brainrot
 local yt = Instance.new("TextButton", contents[1])
 yt.Size = UDim2.new(1, -20, 0, 45)
 yt.Position = UDim2.new(0, 10, 0, y+55)
-yt.BackgroundColor3 = Color3.fromRGB(255,0,0)
+yt.BackgroundColor3 = Color3.fromRGB(180, 40, 40)  -- Merah youtube (kontras)
 yt.Text = "▶️ SUBSCRIBE YOUTUBE"
 yt.TextColor3 = Color3.white
 yt.Font = Enum.Font.GothamBold
@@ -319,7 +294,7 @@ local rl = Instance.new("TextLabel", contents[2])
 rl.Size = UDim2.new(1, -20, 0, 25)
 rl.Position = UDim2.new(0, 10, 0, y)
 rl.Text = "✨ RARITY FILTERS"
-rl.TextColor3 = Color3.fromRGB(160,160,255)
+rl.TextColor3 = Color3.fromRGB(120, 200, 255)
 rl.TextXAlignment = "Left"
 rl.Font = Enum.Font.GothamBold
 rl.BackgroundTransparency = 1
@@ -333,14 +308,14 @@ for i = 1, 9 do
     local bg = Instance.new("Frame", contents[2])
     bg.Size = UDim2.new(0.45, 0, 0, 30)
     bg.Position = UDim2.new(col, 0, 0, y + row*35)
-    bg.BackgroundColor3 = Color3.fromRGB(22,22,30)
+    bg.BackgroundColor3 = Color3.fromRGB(18, 28, 42)
     bg.BorderSizePixel = 0
     
     local l = Instance.new("TextLabel", bg)
     l.Size = UDim2.new(0, 90, 1, 0)
     l.Position = UDim2.new(0, 8, 0, 0)
     l.Text = rarities[i]
-    l.TextColor3 = Color3.fromRGB(220,220,220)
+    l.TextColor3 = Color3.fromRGB(200, 220, 255)
     l.TextXAlignment = "Left"
     l.BackgroundTransparency = 1
     l.TextSize = 12
@@ -348,7 +323,7 @@ for i = 1, 9 do
     local b = Instance.new("TextButton", bg)
     b.Size = UDim2.new(0, 45, 0, 22)
     b.Position = UDim2.new(1, -50, 0.5, -11)
-    b.BackgroundColor3 = Color3.fromRGB(0,170,0)
+    b.BackgroundColor3 = Color3.fromRGB(0, 150, 255)  -- Biru ON
     b.Text = "ON"
     b.TextColor3 = Color3.white
     b.TextSize = 12
@@ -357,7 +332,7 @@ for i = 1, 9 do
     local state = true
     b.MouseButton1Click:Connect(function()
         state = not state
-        b.BackgroundColor3 = state and Color3.fromRGB(0,170,0) or Color3.fromRGB(75,75,85)
+        b.BackgroundColor3 = state and Color3.fromRGB(0, 150, 255) or Color3.fromRGB(60, 70, 90)
         b.Text = state and "ON" or "OFF"
         getgenv().C.Filter[rkeys[i]] = state
     end)
@@ -393,14 +368,14 @@ y = toggle(contents[5], "💎 Remove VIP Wall", y, false, function(s) getgenv().
 local af = Instance.new("Frame", contents[6])
 af.Size = UDim2.new(1, -20, 0, 50)
 af.Position = UDim2.new(0, 10, 0, 10)
-af.BackgroundColor3 = Color3.fromRGB(25,35,25)
+af.BackgroundColor3 = Color3.fromRGB(18, 35, 25)  -- Hijau gelap (beda dikit)
 af.BorderSizePixel = 0
 
 local l = Instance.new("TextLabel", af)
 l.Size = UDim2.new(0, 150, 1, 0)
 l.Position = UDim2.new(0, 15, 0, 0)
 l.Text = "🛡️ Anti AFK"
-l.TextColor3 = Color3.white
+l.TextColor3 = Color3.fromRGB(200, 255, 200)
 l.TextXAlignment = "Left"
 l.BackgroundTransparency = 1
 l.Font = Enum.Font.GothamBold
@@ -409,7 +384,7 @@ l.TextSize = 16
 local st = Instance.new("Frame", af)
 st.Size = UDim2.new(0, 55, 0, 28)
 st.Position = UDim2.new(1, -65, 0.5, -14)
-st.BackgroundColor3 = Color3.fromRGB(0,200,0)
+st.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
 st.BorderSizePixel = 0
 
 local cr = Instance.new("Frame", st)
@@ -422,7 +397,7 @@ local inf = Instance.new("TextLabel", contents[6])
 inf.Size = UDim2.new(1, -20, 0, 30)
 inf.Position = UDim2.new(0, 10, 0, 65)
 inf.Text = "✓ Anti AFK selalu aktif (otomatis)"
-inf.TextColor3 = Color3.fromRGB(100,255,100)
+inf.TextColor3 = Color3.fromRGB(100, 255, 100)
 inf.BackgroundTransparency = 1
 inf.TextXAlignment = "Left"
 
@@ -432,14 +407,14 @@ inf.TextXAlignment = "Left"
 local sb = Instance.new("Frame", main)
 sb.Size = UDim2.new(1, 0, 0, 25)
 sb.Position = UDim2.new(0, 0, 1, -25)
-sb.BackgroundColor3 = Color3.fromRGB(10,10,15)
+sb.BackgroundColor3 = Color3.fromRGB(10, 18, 30)  -- Biru gelap
 sb.BorderSizePixel = 0
 
 local stx = Instance.new("TextLabel", sb)
 stx.Size = UDim2.new(1, -10, 1, 0)
 stx.Position = UDim2.new(0, 10, 0, 0)
 stx.Text = "🟢 Anti AFK: ON • Bring: OFF"
-stx.TextColor3 = Color3.fromRGB(0,255,100)
+stx.TextColor3 = Color3.fromRGB(100, 255, 200)
 stx.TextXAlignment = "Left"
 stx.BackgroundTransparency = 1
 stx.TextSize = 12
@@ -448,4 +423,4 @@ spawn(function() while wait(0.5) do
     stx.Text = "🟢 Anti AFK: ON • Bring: " .. (getgenv().C.Bring and "ON" or "OFF")
 end end)
 
-print("✅ BRAINROT HUB - MINIMIZE WITH BUTTON LOADED")
+print("✅ BRAINROT HUB - BLUE GRADIENT LOADED")
